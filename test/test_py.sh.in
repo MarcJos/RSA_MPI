@@ -1,0 +1,4 @@
+source @CMAKE_SOURCE_DIR@/Env.sh
+mpiexec -n 4 python3 @CMAKE_SOURCE_DIR@/scripts_python/launch_rsa_mpi.py
+mpiexec -n 4 python3 @CMAKE_SOURCE_DIR@/scripts_python/launch_rsa_mpi_fast.py
+mpiexec -n 4 python3 @CMAKE_SOURCE_DIR@/scripts_python/reiterate.py
