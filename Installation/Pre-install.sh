@@ -9,9 +9,6 @@
 ###############################################################################################
 
 source Installation/Install_environment.sh
-cd modules
-
-cd ../
 
 ## get  pybind11
 cd Interface_python
