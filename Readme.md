@@ -32,13 +32,13 @@ This software provides an HPC implementation **equivalent** to the following cla
   - *Geometry* : The default geometry is a periodic cuboid, of prescribed lengths.
   - *Polydispersity* : There exist various ways to impose polydispersity. 
     - Impose an explicit list of radii as a final configuration.
-    - Impose a list of radii $`r_1> ... > r_n`$, with prescribed volume fractions $`\phi_1, ..., \phi_n`$ as a final configuration.
+    - Impose a list of radii $r_1> ... > r_n$, with prescribed volume fractions $\phi_1, ..., \phi_n$ as a final configuration.
 - **Behaviour**:
-  - *Packed configuration* : One can prescribe a list of radii $`r_1> ... > r_n`$, with prescribed volume fractions $`\phi_1, ..., \phi_n`$ as a final configuration. Three cases are possible:
-    - All the volumes fractions $`\phi_j`$ for $`j\leq n`$ can be reached. Then, the algorithm *terminates normally*, and returns a message `End of generation, due to lack of new radii`.
-    - All the volumes fractions $`\phi_j`$ for $`j<n`$ can be reached but the last $`\phi_n`$. Then, the algorithm *terminates normally*, and returns a message `End of algorithm : fully packed`. This guarantees that no more sphere of radius $`r\geq r_n`$ can be added. (To ensure a final packed configuration, impose $`\phi_n=1.0`$.)
-    - At step $`j<n`$, it is not possible to place more spheres to reach the volume fraction $`\phi_j`$ with spheres of radius $`r_j`$. It leads to an **infinite loop** :warning:. (The reason is that the algorithm is not allowed to consider radii $`r_{j+1}`$ before reaching $`\phi_j`$.) To avoid this, consider *re-iterating*.
-  - *Re-iterate* : Starting from a previous configuration, it is possible to add more spheres with different radius. For example, this may be used to get highly heterogenous and packed configurations of spheres of radii $`r_1 > ... > r_n`$, while guaranteeing at each step that the configuration is packed.
+  - *Packed configuration* : One can prescribe a list of radii $r_1> ... > r_n$, with prescribed volume fractions $\phi_1, ..., \phi_n$ as a final configuration. Three cases are possible:
+    - All the volumes fractions $\phi_j$ for $j \leq n$ can be reached. Then, the algorithm *terminates normally*, and returns a message `End of generation, due to lack of new radii`.
+    - All the volumes fractions $\phi_j$ for $j$ with $n > j$ can be reached but the last $\phi_n$. Then, the algorithm *terminates normally*, and returns a message `End of algorithm : fully packed`. This guarantees that no more sphere of radius $r\geq r_n$ can be added. (To ensure a final packed configuration, impose $\phi_n=1.0$.)
+    - At step $j$ for $n>j$, it is not possible to place more spheres to reach the volume fraction $\phi_j$ with spheres of radius $r_j$. It leads to an **infinite loop** :warning:. (The reason is that the algorithm is not allowed to consider radii $r_{j+1}$ before reaching $\phi_j$.) To avoid this, consider *re-iterating*.
+  - *Re-iterate* : Starting from a previous configuration, it is possible to add more spheres with different radius. For example, this may be used to get highly heterogenous and packed configurations of spheres of radii $r_1 > ... > r_n$, while guaranteeing at each step that the configuration is packed.
   - *Randomness* : The produced configurations are pseudo-random. Hence, we use a pseudo-random generator with a random seed. This guarantees the following behaviour: for a fixed number of MPI processes, and for a fixed seed value, the programm returns the same configuration. 
     - :warning: This guarantee is for a fixed machine, with a fixed software environment (compiler, MPI library, ...).
     - :warning: Changing the number of MPI processes changes the final configuration.
@@ -92,7 +92,7 @@ Command lines are available with the command:
 rsa --help
 ```
 
-Example of usage for 3D RSA with radius 0.05 inside a cube $`[0, 1]^3`$.
+Example of usage for 3D RSA with radius 0.05 inside a cube $[0, 1]^3$.
 ```
 mpirun -n 4 rsa --dim 3 --radius 0.05 --seed 0 --size 10000 --inf 0, 0, 0 --sup 1, 1, 1 --paraview 1
 ```
