@@ -1,0 +1,87 @@
+default:
+  tags:
+    - podman
+
+image: debian:bullseye
+
+stages:
+  - testcases
+
+#
+# test case script
+#
+.testcases:
+  stage: testcases
+  before_script:
+    - apt -yqq update && apt -yqq install libomp-dev
+    - apt -yqq update && apt -yqq install python3-dev
+    - apt -yqq update && apt -yqq install build-essential
+    - apt -yqq update && apt -yqq install curl
+    - apt -yqq update && apt -yqq install cmake
+    - apt -yqq update && apt -yqq install gcc
+    - apt -yqq update && apt -yqq install git
+    - apt -yqq update && apt -yqq install libblas-dev
+    - apt -yqq update && apt -yqq install gcovr
+    - apt -yqq update && apt -yqq install liblapack-dev
+    - apt -yqq update && apt -yqq install libopenmpi-dev
+    - apt -yqq update && apt -yqq install openmpi-bin
+    - apt-get -yqq update && apt-get -yqq install freeglut3-dev libxmu-dev libxi-dev cmake
+    - apt -yqq update && apt -yqq install python3-pip
+    - pip3 install mpi4py
+
+
+    # get Merope
+    - cd Interface_python
+    - git config --global http.sslVerify false
+    - git clone https://TokenCpPybind:$TokenCpPybind@www-git-cad.intra.cea.fr/DEC/collaboratif/mj263790/copy_pybind pybind11
+    - cd ../
+    # get MATools
+    #- source Installation/add_MATools.sh
+    # add potentially missing packages    
+    # retrieve pre-built gcc binairies for the current os
+    #- 'curl -O -k --header "JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/504/packages/generic/gcc-bin/9.3.0/gcc-bin-9.3.0_${CODENAME}.tar.xz"'
+    #- tar Jxf gcc-bin-9.3.0_${CODENAME}.tar.xz
+
+
+  script:    
+    - export OMPI_ALLOW_RUN_AS_ROOT=1
+    - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+    - cd ${CI_PROJECT_DIR}/
+    - mkdir build  
+    - cd build
+    - cmake ../ -DCMAKE_BUILD_TYPE=Debug
+    - make
+    - ctest --output-on-failure
+    - cd ../
+# coverage
+    - rm -rf build
+    - mkdir build  
+    - cd build
+    - echo $PWD
+    - cmake ../ -DCMAKE_BUILD_TYPE=Coverage
+    - make
+    - cd ../
+    - mkdir CodeCoverage
+    - cd CodeCoverage
+    - gcovr --html-details --exclude-unreachable-branches --print-summary -o coverage.html --root ${CI_PROJECT_DIR}  --exclude ${CI_PROJECT_DIR}/modules
+
+  artifacts:
+    when: always
+    paths:
+      - ${CI_PROJECT_DIR}/CodeCoverage
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: ${CI_PROJECT_DIR}/CodeCoverage/coverage.html
+
+
+bullseye_testcases:
+  extends:
+    - .testcases
+
+# les tests échouent sur stretch car cmake 3.7.2 ne connait pas C++17
+# le support de cette version est-il requis ?
+#stretch_testcases:
+#  extends:
+#    - .stretch_image
+#    - .testcases
