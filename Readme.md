@@ -65,12 +65,28 @@ source Env.sh
 cd build
 ctest
 cd ../
+
+
 ```
   4. Generate **doxygen** documentation (html in `./doc/')
 ```
 cd include
 doxygen DoxyDoc
 cd ../
+```
+
+## Installation with Spack
+
+:warning: These commands should be done in the root directory.
+
+Add repository that contains the spack package.
+
+```
+spack repo add spack_repo
+```
+
+```
+spack install rsampi
 ```
 
 # Use
