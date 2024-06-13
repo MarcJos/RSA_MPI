@@ -7,17 +7,14 @@ class Rsampi(CMakePackage):
     homepage = "https://github.com/MarcJos/RSA_MPI"
     git = "https://github.com/MarcJos/RSA_MPI.git"
 
-    version("1.0", commit="3c21d84bc448f7cebea5ab3a96074784c0dbe51e")
+    version("1.0", commit="9a05001a988b89c8a383b1f0b741fcfb1b413e64")
 
-    depends_on("cmake")
+    depends_on("cmake@3.26.3")
     depends_on("openmpi")
-    depends_on("py-pybind11")
-
-    build_system("cmake", default="cmake")
+    build_system("cmake", default="cmake@3.26.3")
 
     @run_before("cmake")
     def pre_install(self):
-#        with working_dir(self.stage.source_path):
          bash = which("bash")
          bash("./Installation/Pre-install.sh")
 
