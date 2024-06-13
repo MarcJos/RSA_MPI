@@ -8,14 +8,6 @@ set(CMAKE_BUILD_TYPE "Release")
 find_package(MPI REQUIRED)
 find_package(OpenMP REQUIRED)
 
-option(USE_MATOOLS OFF)
-add_library(interfMatools INTERFACE)
-if(USE_MATOOLS)
-	find_package(MATools REQUIRED)
-  add_compile_options(-DRSA_MPI_ENABLE_PROFILING)
-  target_link_libraries(interfMatools INTERFACE MATools)
-endif()
-
 # code coverage
 option(CODE_COVERAGE OFF)
 if(CODE_COVERAGE)
