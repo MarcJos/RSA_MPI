@@ -7,7 +7,7 @@ class Rsampi(CMakePackage):
     homepage = "https://github.com/MarcJos/RSA_MPI"
     git = "https://github.com/MarcJos/RSA_MPI.git"
 
-    version("1.0", commit="0c496ad70586b4fbf81d5e0af94ec4898af17ac9")
+    version("1.0", commit="fc460f9b3b69d7f3dcbcbb6bcabd8c96a978d32f")
 
     depends_on("cmake")
     depends_on("openmpi")
