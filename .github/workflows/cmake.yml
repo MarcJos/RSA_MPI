@@ -27,7 +27,7 @@ jobs:
     - name : test
       run : pip3 install mpi4py
       
-    - name: Load env
+    - name: Pre-install
       run: source ${{github.workspace}}/Installation/Pre-install.sh
 
     - name: Configure CMake
@@ -44,7 +44,7 @@ jobs:
     - name: Generate a code coverage report
       uses: threeal/gcovr-action@v1.0.0
       with:
-        root: ${{github.workspace}}
+        root: ${{github.workspace}/include}
 
     - name: Generate a code coverage report
       run: gcovr --html-details coverage.html
