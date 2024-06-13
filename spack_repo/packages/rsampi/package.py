@@ -15,6 +15,11 @@ class Rsampi(CMakePackage):
 
     build_system("cmake", default="cmake")
 
+    @run_before("cmake")
+    def pre_install(self):
+#        with working_dir(self.stage.source_path):
+         bash = which("bash")
+         bash("./Installation/Pre-install.sh")
 
     def cmake_args(self):
         args = []
