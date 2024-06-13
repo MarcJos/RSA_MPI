@@ -24,7 +24,9 @@ jobs:
 
     - uses: actions/setup-node@v4
     - uses: mpi4py/setup-mpi@v1
-
+    - name : test
+      run : pip3 install mpi4py
+      
     - name: Load env
       run: source ${{github.workspace}}/Installation/Pre-install.sh
 
