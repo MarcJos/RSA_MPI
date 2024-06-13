@@ -1,0 +1,54 @@
+name: CMake
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
+    # You can convert this to a matrix build if you need cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        persist-credentials: false
+
+    - uses: actions/setup-node@v4
+    - uses: mpi4py/setup-mpi@v1
+
+    - name: Load env
+      run: source ${{github.workspace}}/Pre-install.sh
+
+    - name: Configure CMake
+      run: cmake -DCMAKE_CXX_FLAGS="--coverage -g" -DMATOOLS_TESTING=ON -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+    - name: Build
+      # Build your program with the given configuration
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build
+      run: ctest -C --rerun-failed --output-on-failure ${{env.BUILD_TYPE}}
+
+    - name: Generate a code coverage report
+      uses: threeal/gcovr-action@v1.0.0
+      with:
+        root: ${{github.workspace}}
+
+    - name: Generate a code coverage report
+      run: gcovr --html-details coverage.html
+
+    - name: Archive code coverage results
+      uses: actions/upload-artifact@v4
+      with:
+        name: code-coverage-report
+        path: coverage.html
