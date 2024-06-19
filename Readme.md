@@ -89,6 +89,13 @@ spack repo add spack_repo
 spack install rsampi
 ```
 
+The executable can be appealed by rsa after writing:
+```
+export rsa=$(spack location -i rsampi)/bin/rsa
+```
+
+
+
 # Use
 
 Source the environment.
