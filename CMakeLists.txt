@@ -23,6 +23,7 @@ add_definitions(-DOMPI_SKIP_MPICXX)
 include_directories(SYSTEM ${MPI_INCLUDE_PATH})
 add_executable(rsa command_line.cpp)
 target_include_directories(rsa PUBLIC include/)
+install(TARGETS rsa DESTINATION bin)
 
 target_link_libraries(rsa PUBLIC MPI::MPI_CXX OpenMP::OpenMP_CXX)
 
