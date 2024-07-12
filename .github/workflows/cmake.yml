@@ -31,7 +31,7 @@ jobs:
       run: source ${{github.workspace}}/Installation/Pre-install.sh
 
     - name: Configure CMake
-      run: cmake -DCMAKE_CXX_FLAGS="--coverage -g" -DMATOOLS_TESTING=ON -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: cmake -DCMAKE_CXX_FLAGS="--coverage -g" -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
     - name: Build
       # Build your program with the given configuration
@@ -47,7 +47,7 @@ jobs:
         root: ${{github.workspace}}
 
     - name: Generate a code coverage report
-      run: gcovr  --gcov-exclude-directories='Interface_python/pybind11$' --html-details coverage.html
+      run: gcovr --exclude='Interface_python/pybind11/*' --html-details coverage.html
 
     - name: Archive code coverage results
       uses: actions/upload-artifact@v4
