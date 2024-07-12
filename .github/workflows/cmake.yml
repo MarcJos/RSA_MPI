@@ -47,7 +47,7 @@ jobs:
         root: ${{github.workspace}}
 
     - name: Generate a code coverage report
-      run: gcovr --exclude='*Interface_python/pybind11/*' --html-details coverage.html
+      run: gcovr --exclude-directories='*Interface_python/pybind11/*' --html-details coverage.html
 
     - name: Archive code coverage results
       uses: actions/upload-artifact@v4
