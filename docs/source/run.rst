@@ -3,7 +3,7 @@ RSA MPI Usage
 =============
 
 Source the environment
-----------------------
+======================
 
 .. code-block:: bash
 
@@ -27,6 +27,9 @@ Command lines are available with the command:
 .. code-block:: bash
 
    rsa --help
+
+Parameters description
+----------------------
 
 +------------+-----------------------+-----------------------------------------------------------------------------+
 | Option     | Type                  | Description                                                                 |
