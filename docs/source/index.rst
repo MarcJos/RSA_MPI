@@ -16,6 +16,7 @@ This project is written in ``C++-17``.
 
    overview.rst
    install.rst
+   run.rst
    algorithm.rst
    pythond_manual.rst
    examples.rst
