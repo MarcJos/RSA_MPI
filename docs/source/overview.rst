@@ -18,6 +18,8 @@ spheres over 131,072 ``MPI`` processes in 16 seconds in dimension d=3.
 
 This project is written in ``c++17``.
 
+.. figure:: _static/Illustration_RSA.png
+
 Contributors
 ============
 
