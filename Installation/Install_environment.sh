@@ -7,7 +7,7 @@
 ###############################################################################################
 
 
-if [[ "${HOSTNAME}" == *"pleiades"* ]]
+if [[ "${HOSTNAME}" == *"p00leiades"* ]]
 then
     export PYBIND_REPO=https://www-git-cad.intra.cea.fr/DEC/collaboratif/mj263790/copy_pybind 
 else
