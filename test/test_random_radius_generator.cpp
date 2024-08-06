@@ -10,10 +10,10 @@ int main(int argc, char** argv) {
     const int ghost_layer = 1;
 
 
-    // uniform law between (0.025 and 0.1)
+    // uniform law between r_min and r_max
     uint64_t phase = 0;
     double r_min = 0.05;
-    double r_max = 0.1;
+    double r_max = 0.055;
     auto nonlinear_transform = [r_min, r_max](double x) {return r_min + (r_max - r_min) * x;};
     uint64_t nb_spheres_max = 1e16; // full configuration
     sac_de_billes::RandomRadiusGenerator random_radius_generator(nonlinear_transform, phase);
@@ -25,7 +25,8 @@ int main(int argc, char** argv) {
 
     domain.domain_log();
     size_t seed = 0;
-    algorithm::uniform_generate<DIM>(domain, radius_generator, 6000, 10, seed);
+
+    algorithm::uniform_generate<DIM, 1, false>(domain, radius_generator, 6000, 10, seed);
 
     if constexpr (DIM == 2 or DIM == 3) {
         rsa_mpi::message("====> write mpi output file <=====");

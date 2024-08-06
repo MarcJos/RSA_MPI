@@ -10,6 +10,9 @@ namespace sac_de_billes {
 using namespace std;
 
 class RandomRadiusGenerator {
+    //! @warning : this can severely hinder the performance UNLESS
+    //! 1) r_max - r_min << r_min (in practice, 10% is already high)
+    //! 2) OR the maximal configuration is not sought for
 public:
     //! @brief : internal constructor
     //! @param transform_ : nonlinear transform so that the resulting radius generated is

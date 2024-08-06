@@ -11,6 +11,25 @@
 #include <cmath>
 
 namespace algorithm {
+
+template<int DIM>
+rsa_algo<DIM>::rsa_algo(rsa_domain<DIM>& a_domain, RadiusGenerator<DIM>& a_radius_generator,
+	int a_nbshots_singledraw, int a_n_draw) :
+	m_nbshots_singledraw{ std::move(a_nbshots_singledraw) },
+	m_n_draw{ a_n_draw },
+	m_radius_generator{ a_radius_generator },
+	m_domain{ a_domain },
+	m_ghost_data{},
+	m_r_max{ a_radius_generator.get_max_radius() },
+	miss_rate{ auxi::magical_default_miss_rate<DIM>() } {
+	this->get_grid() = rsa_grid<DIM>(a_radius_generator.get_max_radius(), a_domain.get_ghost_layer(),
+		a_domain.get_inf(), a_domain.get_sup());
+	if (a_radius_generator.get_max_radius() > a_domain.get_m_rad()) {
+		throw runtime_error("Impossible to have the maximal radius of radius generator larger than domain implicit radius");
+	}
+}
+
+
 template<int DIM>
 void rsa_algo<DIM>::proceed_naive(std::mt19937& random_generator) {
 	auto ulaw = auxi::create_random_law(m_domain, random_generator);
@@ -64,8 +83,8 @@ void rsa_algo<DIM>::check_vox_time() {
 }
 
 template<int DIM>
+template<bool plog>
 void rsa_algo<DIM>::proceed_voxel(std::mt19937& random_generator) {
-	constexpr bool plog = false;
 	// create voxels for generating spheres
 	voxel_list::list_of_voxels<DIM> uncovered_voxels(m_domain.get_inf(), m_domain.get_sup() - m_domain.get_inf(),
 		(m_r_max + m_radius_generator.get_min_radius()));
@@ -130,7 +149,7 @@ void rsa_algo<DIM>::proceed_voxel(std::mt19937& random_generator) {
 		old_nb_spheres = new_nb_spheres;
 		uint64_t total_nb_miss = rsa_mpi::compute_mpi_sum(nb_miss); // could fuse these reduction operations with nb_shots?
 		double miss_rate = total_nb_miss / (0.000001 + total_nb_shots);
-		if (plog) { // print output
+		if constexpr (plog) { // print output
 			rsa_mpi::message("--> Miss rate = " + to_string(int(100 * miss_rate)) + "%"
 				+ "               ; Nb shots = " + to_string(total_nb_shots)
 				+ " ; Nb miss = ", to_string(total_nb_miss)
@@ -140,7 +159,7 @@ void rsa_algo<DIM>::proceed_voxel(std::mt19937& random_generator) {
 		final_nb_shots += total_nb_shots;
 
 		//! update covered voxels
-		update_covered_voxels(uncovered_voxels, miss_rate); // optimize_efficiency
+		update_covered_voxels<plog>(uncovered_voxels, miss_rate); // optimize_efficiency
 
 		if (not should_continue) {
 			rsa_mpi::message("End of generation, due to lack of new radii");
@@ -169,15 +188,7 @@ void rsa_algo<DIM>::proceed_voxel(std::mt19937& random_generator) {
 }
 
 template<int DIM>
-double rsa_algo<DIM>::desired_miss_rate() const {
-	if constexpr (DIM <= 3) {
-		return 0.95; // magical
-	} else {
-		return 1 - 0.05 * auxi_function::puissance<DIM - 3>(0.1); // magical
-	}
-}
-
-template<int DIM>
+template<bool plog>
 void  rsa_algo<DIM>::update_covered_voxels(voxel_list::list_of_voxels<DIM>& uncovered_voxels,
 	double miss_rate) {
 	if (miss_rate > desired_miss_rate()) {
@@ -185,8 +196,7 @@ void  rsa_algo<DIM>::update_covered_voxels(voxel_list::list_of_voxels<DIM>& unco
 		uncovered_voxels.subdivide_uncovered(this->get_grid(), this->m_radius_generator.get_min_radius());
 	}
 
-	constexpr bool plog = false;
-	if (plog) {
+	if constexpr (plog) {
 		int64_t nb_voxels = uncovered_voxels.size();
 		int64_t max_nb_voxels = rsa_mpi::compute_mpi_max(nb_voxels);
 		int64_t total_nb_voxels = rsa_mpi::compute_mpi_sum(nb_voxels);
@@ -213,7 +223,7 @@ double rsa_algo<DIM>::compute_intensity_poisson(int a_number_of_voxels) {
 }
 
 template<int DIM>
-template<int method>
+template<int method, bool plog>
 void rsa_algo<DIM>::proceed(size_t seed) {
 	static_assert(method == 0 or method == 1);
 	std::mt19937 random_generator = law::create_random_generator(seed);
@@ -221,7 +231,7 @@ void rsa_algo<DIM>::proceed(size_t seed) {
 		this->proceed_naive(random_generator);
 	}
 	if constexpr (method == 1) {
-		this->proceed_voxel(random_generator);
+		this->proceed_voxel<plog>(random_generator);
 	}
 }
 
@@ -262,22 +272,22 @@ int64_t rsa_algo<DIM>::single_draw(CenterGenerator& center_generator,
 	return nb_added_spheres;
 }
 
-template<int DIM, int method>
+template<int DIM, int method, bool plog>
 rsa_algo<DIM> uniform_generate(rsa_domain<DIM>& a_domain, double a_rad,
 	int a_size, int a_n_draw, size_t seed) {
 	RadiusGenerator<DIM> radius_generator(
 		vector<tuple<double, double, int>>{ {a_rad, 1., 0} }, a_domain.get_total_volume()
 	);
 	assert(radius_generator.get_current_number() > 0);
-	return uniform_generate<DIM, method>(a_domain, radius_generator, a_size, a_n_draw, seed);
+	return uniform_generate<DIM, method, plog>(a_domain, radius_generator, a_size, a_n_draw, seed);
 }
 
-template<int DIM, int method>
+template<int DIM, int method, bool plog>
 rsa_algo<DIM> uniform_generate(rsa_domain<DIM>& a_domain,
 	sac_de_billes::RadiusGenerator<DIM>& radius_generator,
 	int a_size, int a_n_draw, size_t seed) {
 	rsa_algo<DIM> rsaalgo(a_domain, radius_generator, a_size, a_n_draw);
-	rsaalgo.template proceed<method>(seed);
+	rsaalgo.template proceed<method, plog>(seed);
 	return rsaalgo;
 }
 
@@ -329,6 +339,15 @@ vector<uint64_t> auxi::compute_conflict_cells(const rsa_data_storage<DIM>& a_sph
 	auto last = std::unique(cells_with_conflicts.begin(), cells_with_conflicts.end());
 	cells_with_conflicts.erase(last, cells_with_conflicts.end());
 	return cells_with_conflicts;
+}
+
+template<int DIM>
+double auxi::magical_default_miss_rate() {
+	if constexpr (DIM <= 3) {
+		return 0.95; // magical
+	} else {
+		return 1 - 0.05 * auxi_function::puissance<DIM - 3>(0.1); // magical
+	}
 }
 
 template<int DIM>
