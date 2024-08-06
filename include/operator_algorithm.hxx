@@ -162,7 +162,7 @@ int64_t generate_spheres(rsa_grid<DIM>& a_grid,
 template<int DIM, typename CenterGenerator, class PriorityGenerator>
 rsa_data_storage<DIM> generate_candidates(
 	CenterGenerator& a_center_generator,
-	const RadiusGenerator<DIM>& a_radius_generator,
+	RadiusGenerator<DIM>& a_radius_generator,
 	PriorityGenerator& a_priority_generator,
 	int a_size);
 

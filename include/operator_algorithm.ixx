@@ -245,10 +245,7 @@ int64_t rsa_algo<DIM>::single_draw(CenterGenerator& center_generator,
 
 template<int DIM>
 void rsa_algo<DIM>::update_radius_generator(int64_t nb_placed_spheres) {
-	m_radius_generator.set_current_number(m_radius_generator.get_current_number() - nb_placed_spheres);
-	if (m_radius_generator.get_current_number() == 0) {
-		m_radius_generator.go_to_next_radius();
-	}
+	m_radius_generator.update_placed(nb_placed_spheres);
 }
 
 template<int DIM, int method>
@@ -538,16 +535,16 @@ int64_t generate_spheres(rsa_grid<DIM>& a_grid,
 template<int DIM, typename CenterGenerator, class PriorityGenerator>
 rsa_data_storage<DIM> generate_candidates(
 	CenterGenerator& a_center_generator,
-	const RadiusGenerator<DIM>& a_radius_generator,
+	RadiusGenerator<DIM>& a_radius_generator,
 	PriorityGenerator& a_priority_generator,
 	int a_size) {
 
 	rsa_data_storage<DIM> spheres;
 	auto pos = a_center_generator(a_size);
 	auto priority = a_priority_generator(a_size);
-	std::vector<double> radii(a_size, a_radius_generator.get_current_radius());
-	vec_int phases(a_size, a_radius_generator.get_current_phase());
-	spheres.add_spheres(priority, phases, radii, pos);
+
+	auto phases_radii = a_radius_generator.generate_phase_radii(a_size);
+	spheres.add_spheres(priority, std::get<0>(phases_radii), std::get<1>(phases_radii), pos);
 
 	return spheres;
 }

@@ -36,6 +36,22 @@ RadiusGenerator<DIM>::RadiusGenerator(vector<tuple<double, double, int>> desired
         exclusion_distance_) {}
 
 template<int DIM>
+std::tuple<vec_int, vec_double> RadiusGenerator<DIM>::generate_phase_radii(size_t a_size) {
+    std::tuple<vec_int, vec_double> result(vec_int(a_size, this->get_current_phase()),
+        vec_double(a_size, this->get_current_radius()));
+    return result;
+}
+
+template<int DIM>
+void RadiusGenerator<DIM>::update_placed(size_t nb_placed_spheres) {
+    this->set_current_number(this->get_current_number() - nb_placed_spheres);
+    if (this->get_current_number() == 0) {
+        this->go_to_next_radius();
+    }
+}
+
+
+template<int DIM>
 vector<tuple<double, uint64_t, int>> radius_generator_auxi::compute_desired_radius_nb_phase(
     vector<tuple<double, double, int>> desired_radius_volumeFraction_phase,
     double volume) {
