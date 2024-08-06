@@ -105,9 +105,10 @@ private:
 	//! @param priority_generator : generate the priority of spheres, to know which one come first
 	//! @param nb_shots : desired nb of centers to be drawn, for each MPI process
 	//! @param may_outreach_nb_spheres : true if the number of shots is higher than the desired nb of spheres to be placed
-	template<class CenterGenerator, class PriorityGenerator>
-	int64_t single_draw(CenterGenerator& center_generator, PriorityGenerator& priority_generator, int nb_shots,
-		bool may_outreach_nb_spheres = true);
+	template<class CenterGenerator, class PriorityGenerator, class RadiusGenerator>
+	int64_t single_draw(CenterGenerator& center_generator, PriorityGenerator& priority_generator,
+		RadiusGenerator& a_radius_generator,
+		int nb_shots, bool may_outreach_nb_spheres = true);
 	//! @return return the desired miss rate of the voxel strategy. (Magical constants.)
 	double desired_miss_rate() const;
 };
@@ -138,12 +139,12 @@ bool add_to_sample(
 //! @param a_center_generator : The center generator used to create sphere centers.
 //! @param a_size : The size of the sample.
 //! @param a_ghost_data : The data storage used to store temporarly ghost spheres.
-template<int DIM, typename CenterGenerator, class PriorityGenerator>
+template<int DIM, class CenterGenerator, class PriorityGenerator, class RadiusGenerator>
 int64_t generate_spheres(rsa_grid<DIM>& a_grid,
 	Buffers<DIM>& a_recv, Buffers<DIM>& a_send,
 	GhostAreas<DIM>& a_ghost_areas,
 	CenterGenerator& a_center_generator,
-	RadiusGenerator<DIM>& a_radius_generator,
+	RadiusGenerator& a_radius_generator,
 	PriorityGenerator& a_priority_generator,
 	int a_size,
 	rsa_data_storage<DIM>& a_ghost_data,
@@ -156,10 +157,10 @@ int64_t generate_spheres(rsa_grid<DIM>& a_grid,
 //! @param a_radius_generator
 //! @param a_center_generator
 //! @param a_size : nb of generated spheres
-template<int DIM, typename CenterGenerator, class PriorityGenerator>
+template<int DIM, class CenterGenerator, class PriorityGenerator, class RadiusGenerator>
 rsa_data_storage<DIM> generate_candidates(
 	CenterGenerator& a_center_generator,
-	RadiusGenerator<DIM>& a_radius_generator,
+	RadiusGenerator& a_radius_generator,
 	PriorityGenerator& a_priority_generator,
 	int a_size);
 
