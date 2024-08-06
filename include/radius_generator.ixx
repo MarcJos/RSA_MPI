@@ -40,7 +40,7 @@ template<int DIM, class RANDOM_RADIUS_GENERATOR>
 RadiusGenerator<DIM, RANDOM_RADIUS_GENERATOR>::RadiusGenerator(double min_radius_, double max_radius_,
     const RANDOM_RADIUS_GENERATOR* randomRadiusGenerator,
     size_t desired_nb_spheres, double exclusion_distance_) :
-    desired_radius_nb_phase({}),
+    desired_radius_nb_phase({ tuple<double, uint64_t, int>(0., desired_nb_spheres, 0) }),
     exclusion_distance{ exclusion_distance_ },
     max_radius{ max_radius_ },
     min_radius{ min_radius_ },
@@ -49,13 +49,14 @@ RadiusGenerator<DIM, RANDOM_RADIUS_GENERATOR>::RadiusGenerator(double min_radius
 
 template<int DIM, class RANDOM_RADIUS_GENERATOR>
 std::tuple<vec_int, vec_double> RadiusGenerator<DIM, RANDOM_RADIUS_GENERATOR>::operator()(size_t a_size, std::mt19937& random_generator) const {
+    std::tuple<vec_int, vec_double> result;
     if (not custom_radius_generator) {
-        std::tuple<vec_int, vec_double> result(vec_int(a_size, this->get_current_phase()),
+        result = std::tuple<vec_int, vec_double>(vec_int(a_size, this->get_current_phase()),
             vec_double(a_size, this->get_current_radius()));
-        return result;
     } else {
-        custom_radius_generator->operator()(a_size, random_generator);
+        result = custom_radius_generator->operator()(a_size, random_generator);
     }
+    return result;
 }
 
 template<int DIM, class RANDOM_RADIUS_GENERATOR>

@@ -167,10 +167,10 @@ rsa_data_storage<DIM> generate_candidates(
 	int a_size);
 
 //! @brief : This function generates a_size * a_n_draw spheres and try to add it in data_storage
-template<int DIM, int method>
+template<int DIM, int method = 1>
 rsa_algo<DIM> uniform_generate(rsa_domain<DIM>& a_domain, double a_rad,
 	int a_size, int a_n_draw = 1, size_t seed = 0);
-template<int DIM, int method>
+template<int DIM, int method = 1>
 rsa_algo<DIM> uniform_generate(rsa_domain<DIM>& a_domain,
 	sac_de_billes::RadiusGenerator<DIM>& radius_generator,
 	int a_size, int a_n_draw, size_t seed = 0);
