@@ -24,7 +24,7 @@ public:
         law::uniform<double> ulaw(0., 1., random_generator);
         std::tuple<vec_int, vec_double> result(vec_int(a_size, this->phase), vec_double(a_size, 0.));
         for (size_t i = 0; i < a_size; i++) {
-            get<1>(result)[i] = ulaw();
+            get<1>(result)[i] = transform(ulaw());
         }
         return result;
     }
