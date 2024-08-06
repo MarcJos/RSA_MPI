@@ -1,7 +1,6 @@
 # mpiexec -n 4 python3 launch_rsa_mpi.py 
 
 import mpi4py
-mpi4py.rc.threaded = True
 mpi4py.rc.thread_level = "funneled"
 from mpi4py  import  MPI
 import time
