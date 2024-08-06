@@ -1,4 +1,4 @@
-#Users' guide
+# Users' guide
 
 See [https://marcjos.github.io/RSA_MPI/](https://marcjos.github.io/RSA_MPI/).
 
