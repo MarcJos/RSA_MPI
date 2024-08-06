@@ -11,8 +11,10 @@ This strategy has been extended to the MPI framework, as decribed in this paper 
 Our implementation successfully generated more than 12 billions of spheres over 131,072 MPI processes in 16 seconds in dimension d=3.
 
 <div align="center">
-<img src="doc/Illustration_RSA.png" alt="drawing" width="300"/>
+<img src="docs/source/_static/Illustration_RSA.png" alt="drawing" height="300"/>
+<img src="docs/source/_static/fract_2D_zoom.png" alt="drawing" height="300"/>
 </div>
+
 
 # The RSA algorithm
 
