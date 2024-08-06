@@ -9,7 +9,37 @@ namespace sac_de_billes {
 
 using namespace std;
 
-template<int DIM>
+class RandomRadiusGenerator {
+public:
+    //! @brief : internal constructor
+    //! @param transform_ : nonlinear transform so that the resulting radius generated is
+    //! transform_(x) for x a uniform variable in [0, 1]
+    //! @param phase_ : phase of the newly created spheres
+    inline RandomRadiusGenerator(std::function<double(double)> transform_, uint64_t phase_) :
+        transform{ transform_ }, phase{ phase_ } {}
+    //! @return : a pair< vector_of_phases, vector_of_radii>, with vector_of_phases[i] corresponding to vector_of_radii[i]
+    //! @param a_size : number of radii generated
+    //! @param random_generator : a random engine
+    inline std::tuple<vec_int, vec_double> operator()(size_t a_size, std::mt19937& random_generator) const {
+        law::uniform<double> ulaw(0., 1., random_generator);
+        std::tuple<vec_int, vec_double> result(vec_int(a_size, this->phase), vec_double(a_size, 0.));
+        for (size_t i = 0; i < a_size; i++) {
+            get<1>(result)[i] = ulaw();
+        }
+        return result;
+    }
+
+private:
+    std::function<double(double)> transform;
+    uint64_t phase;
+};
+
+
+//! @brief class for generating radii
+//! @tparam RANDOM_RADIUS_GENERATOR : optional class for generating radii
+//! (defaulted as RandomRadiusGenerator, but might be something else)
+//! @tparam DIM : dimension of the space
+template<int DIM, class RANDOM_RADIUS_GENERATOR = RandomRadiusGenerator>
 class RadiusGenerator {
     //! @brief class used for generating successively radii of spheres to be placed
     //! @warning: the internal representation of radii takes into account a parameter called exclusionDistance, \see RadiusGenerator::setTabRadii
@@ -26,6 +56,15 @@ public:
     RadiusGenerator(vector<tuple<double, double, int>> desired_radius_volumeFraction_phase,
         double volume,
         double exclusion_distance = 0);
+    //! @brief : constructor from a random radius generator
+    //! @param min_radius_ : minimal radius of the distribution (should fit it)
+    //! @param max_radius_ : maximal radius of the distribution (possibly above it)
+    //! @param randomRadiusGenerator : random radius generator
+    //! @param desired_nb_spheres : desired final number of spheres
+    //! @param exclusion_distance : exclusion distance
+    RadiusGenerator(double min_radius_, double max_radius_,
+        const RANDOM_RADIUS_GENERATOR* randomRadiusGenerator,
+        size_t desired_nb_spheres, double exclusion_distance = 0);
 
     //! @return are there still radii to be generated?
     bool is_there_still_radii() const { return uint64_t(current_index) < desired_radius_nb_phase.size(); }
@@ -48,6 +87,8 @@ private:
     double max_radius;
     double min_radius;
     int current_index;
+    const RANDOM_RADIUS_GENERATOR* custom_radius_generator;
+
 
 private:
     //! \return the current radius
@@ -58,36 +99,6 @@ private:
     void set_current_number(uint64_t current_number) { get<1>(desired_radius_nb_phase[current_index]) = current_number; }
     //! @brief goes to the next class of radii
     void go_to_next_radius() { current_index++; }
-};
-
-
-template<class FUNCTION_TYPE>
-class RandomRadiusGenerator {
-public:
-    //! @brief : internal constructor
-    //! @param transform_ : nonlinear transform so that the resulting radius generated is
-    //! transform_(x) for x a uniform variable in [0, 1]
-    //! @param r_min_ : minimal radius that can be generated
-    //! @param r_max_ : maximal radius that can be generated
-    //! @param a_gen : a random engine
-    RandomRadiusGenerator(FUNCTION_TYPE transform_, double r_min_, double r_max_) :
-        r_min{ r_min_ }, r_max{ r_max_ }, transform{ transform_ }, uniform_law(nullptr) {}
-    //! @brief : create the law with the given engine
-    //! @param a_gen : a random engine
-    //! @warning : this randomGenerator cannot be used without this
-    void set_random_generator(std::mt19937& a_gen) {
-        uniform_law.reset(new law::uniform<double>(0., 1., a_gen));
-    }
-    //! @return a radius randomly generated
-    double operator()() {
-        return transform((*uniform_law)());
-    }
-
-private:
-    double r_min;
-    double r_max;
-    FUNCTION_TYPE transform;
-    unique_ptr<law::uniform<double>> uniform_law;
 };
 
 namespace radius_generator_auxi {
