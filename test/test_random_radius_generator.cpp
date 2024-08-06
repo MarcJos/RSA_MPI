@@ -12,7 +12,7 @@ int main(int argc, char** argv) {
 
     // uniform law between (0.025 and 0.1)
     uint64_t phase = 0;
-    double r_min = 0.025;
+    double r_min = 0.05;
     double r_max = 0.1;
     auto nonlinear_transform = [r_min, r_max](double x) {return r_min + (r_max - r_min) * x;};
     uint64_t nb_spheres_max = 1e16; // full configuration
