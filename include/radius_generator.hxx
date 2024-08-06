@@ -37,7 +37,7 @@ public:
     double get_min_radius() const { return min_radius; }
     //! @param a_size : number of radii generated
     //! @return : a pair< vector_of_phases, vector_of_radii>, with vector_of_phases[i] corresponding to vector_of_radii[i]
-    std::tuple<vec_int, vec_double> operator()(size_t a_size);
+    std::tuple<vec_int, vec_double> operator()(size_t a_size, std::mt19937& random_generator) const;
     //! @brief update the radius generator by the knowledge of placed spheres
     //! @param nb_placed_spheres 
     void update_placed(size_t nb_placed_spheres);

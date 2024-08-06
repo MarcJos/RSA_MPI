@@ -108,7 +108,8 @@ private:
 	template<class CenterGenerator, class PriorityGenerator, class RadiusGenerator>
 	int64_t single_draw(CenterGenerator& center_generator, PriorityGenerator& priority_generator,
 		RadiusGenerator& a_radius_generator,
-		int nb_shots, bool may_outreach_nb_spheres = true);
+		int nb_shots, uint64_t nb_spheres_total_max,
+		bool may_outreach_nb_spheres = true);
 	//! @return return the desired miss rate of the voxel strategy. (Magical constants.)
 	double desired_miss_rate() const;
 };
@@ -146,8 +147,9 @@ int64_t generate_spheres(rsa_grid<DIM>& a_grid,
 	CenterGenerator& a_center_generator,
 	RadiusGenerator& a_radius_generator,
 	PriorityGenerator& a_priority_generator,
-	int a_size,
 	rsa_data_storage<DIM>& a_ghost_data,
+	int a_size,
+	uint64_t nb_spheres_total_max,
 	bool may_outreach_nb_spheres);
 
 //! @brief Generate candidate spheres

@@ -23,14 +23,20 @@ void rsa_algo<DIM>::proceed_naive(std::mt19937& random_generator) {
 	auto priority_generator = [&random_generator](int size) {
 		return generate_priority<int>(size, random_generator);
 		};
+	//!
+	const auto& radius_gen = this->m_radius_generator;
+	auto radius_generator = [&radius_gen, &random_generator](int size) {
+		return radius_gen(size, random_generator);
+		};
 
 	// This loop iterates over draw
 	for (int draw = 0; draw < m_n_draw; draw++) {
 		auto nb_shots = m_nbshots_singledraw;
 		int64_t total_nb_shots = nb_shots * rsa_mpi::get_number_of_mpi_processes();
 		bool may_outreach_nb_spheres = (total_nb_shots >= m_radius_generator.get_current_number());
-		int64_t nb_new_spheres_loc = single_draw(center_generator, priority_generator, this->m_radius_generator,
-			nb_shots, may_outreach_nb_spheres);
+		uint64_t nb_spheres_total_max = m_radius_generator.get_current_number();
+		int64_t nb_new_spheres_loc = single_draw(center_generator, priority_generator, radius_generator,
+			nb_shots, nb_spheres_total_max, may_outreach_nb_spheres);
 		int64_t nb_new_spheres_glob = rsa_mpi::compute_mpi_sum(nb_new_spheres_loc);
 		m_radius_generator.update_placed(nb_new_spheres_glob);
 		bool should_continue = m_radius_generator.is_there_still_radii();
@@ -70,6 +76,11 @@ void rsa_algo<DIM>::proceed_voxel(std::mt19937& random_generator) {
 	auto priority_generator = [&random_generator](int size) {
 		return generate_priority<int>(size, random_generator);
 		};
+	//!
+	const auto& radius_gen = this->m_radius_generator;
+	auto radius_generator = [&radius_gen, &random_generator](int size) {
+		return radius_gen(size, random_generator);
+		};
 
 	// This loop iterates over draw
 	uint64_t old_nb_spheres = 0;
@@ -103,8 +114,10 @@ void rsa_algo<DIM>::proceed_voxel(std::mt19937& random_generator) {
 
 		bool may_outreach_nb_spheres = (total_nb_shots >= m_radius_generator.get_current_number());
 
-		uint64_t nb_new_spheres_loc = single_draw(center_generator, priority_generator, this->m_radius_generator,
-			nb_shots, may_outreach_nb_spheres);
+
+		uint64_t nb_spheres_total_max = m_radius_generator.get_current_number();
+		uint64_t nb_new_spheres_loc = single_draw(center_generator, priority_generator, radius_generator,
+			nb_shots, nb_spheres_total_max, may_outreach_nb_spheres);
 		uint64_t nb_new_spheres_glob = rsa_mpi::compute_mpi_sum(nb_new_spheres_loc);
 		m_radius_generator.update_placed(nb_new_spheres_glob);
 		bool should_continue = m_radius_generator.is_there_still_radii();
@@ -231,7 +244,9 @@ template<class CenterGenerator, class PriorityGenerator, class RadiusGenerator>
 int64_t rsa_algo<DIM>::single_draw(CenterGenerator& center_generator,
 	PriorityGenerator& priority_generator,
 	RadiusGenerator& a_radius_generator,
-	int nb_shots, bool may_outreach_nb_spheres) {
+	int nb_shots,
+	uint64_t nb_spheres_total_max,
+	bool may_outreach_nb_spheres) {
 	// get data storage
 	auto& ghost_areas = m_domain.get_ghost_areas();
 	// This function generates a_size spheres and try to store them in the data_storage
@@ -239,7 +254,7 @@ int64_t rsa_algo<DIM>::single_draw(CenterGenerator& center_generator,
 		this->get_grid(),
 		m_domain.get_recv_buffers(), m_domain.get_send_buffers(), ghost_areas,
 		center_generator, a_radius_generator, priority_generator,
-		nb_shots, m_ghost_data, may_outreach_nb_spheres);
+		m_ghost_data, nb_shots, nb_spheres_total_max, may_outreach_nb_spheres);
 	// some checks used for debugging
 	assert(this->get_grid().check_particles() && " collision detected");
 	assert(check_no_doublon(this->get_grid()));
@@ -504,8 +519,9 @@ int64_t generate_spheres(rsa_grid<DIM>& a_grid,
 	CenterGenerator& a_center_generator,
 	RadiusGenerator& a_radius_generator,
 	PriorityGenerator& a_priority_generator,
-	int a_size,
 	rsa_data_storage<DIM>& a_ghost_data,
+	int a_size,
+	uint64_t nb_spheres_total_max,
 	bool may_outreach_nb_spheres) {
 	rsa_data_storage<DIM> spheres = generate_candidates<DIM>(
 		a_center_generator, a_radius_generator, a_priority_generator, a_size);
@@ -517,7 +533,6 @@ int64_t generate_spheres(rsa_grid<DIM>& a_grid,
 
 	// identify the cells containing spheres with conflicts
 	vector<uint64_t> cells_with_conflicts = auxi::compute_conflict_cells<DIM>(spheres, a_grid);
-	uint64_t nb_spheres_total_max = a_radius_generator.get_current_number();
 
 	while (add_to_sample(a_grid,
 		a_recv, a_send,

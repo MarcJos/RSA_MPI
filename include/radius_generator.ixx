@@ -36,7 +36,7 @@ RadiusGenerator<DIM>::RadiusGenerator(vector<tuple<double, double, int>> desired
         exclusion_distance_) {}
 
 template<int DIM>
-std::tuple<vec_int, vec_double> RadiusGenerator<DIM>::operator()(size_t a_size) {
+std::tuple<vec_int, vec_double> RadiusGenerator<DIM>::operator()(size_t a_size, std::mt19937& random_generator) const {
     std::tuple<vec_int, vec_double> result(vec_int(a_size, this->get_current_phase()),
         vec_double(a_size, this->get_current_radius()));
     return result;
