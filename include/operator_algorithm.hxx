@@ -108,9 +108,6 @@ private:
 	template<class CenterGenerator, class PriorityGenerator>
 	int64_t single_draw(CenterGenerator& center_generator, PriorityGenerator& priority_generator, int nb_shots,
 		bool may_outreach_nb_spheres = true);
-
-	//! @brief update the radius generator
-	void update_radius_generator(int64_t nb_placed_spheres);
 	//! @return return the desired miss rate of the voxel strategy. (Magical constants.)
 	double desired_miss_rate() const;
 };

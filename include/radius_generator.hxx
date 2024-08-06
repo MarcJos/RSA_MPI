@@ -3,6 +3,7 @@
 #pragma once
 
 #include <basic_types.hxx>
+#include <rsa_random.hxx>
 
 namespace sac_de_billes {
 
@@ -36,7 +37,7 @@ public:
     double get_min_radius() const { return min_radius; }
     //! @param a_size : number of radii generated
     //! @return : a pair< vector_of_phases, vector_of_radii>, with vector_of_phases[i] corresponding to vector_of_radii[i]
-    std::tuple<vec_int, vec_double> generate_phase_radii(size_t a_size);
+    std::tuple<vec_int, vec_double> operator()(size_t a_size);
     //! @brief update the radius generator by the knowledge of placed spheres
     //! @param nb_placed_spheres 
     void update_placed(size_t nb_placed_spheres);
@@ -59,6 +60,35 @@ private:
     void go_to_next_radius() { current_index++; }
 };
 
+
+template<class FUNCTION_TYPE>
+class RandomRadiusGenerator {
+public:
+    //! @brief : internal constructor
+    //! @param transform_ : nonlinear transform so that the resulting radius generated is
+    //! transform_(x) for x a uniform variable in [0, 1]
+    //! @param r_min_ : minimal radius that can be generated
+    //! @param r_max_ : maximal radius that can be generated
+    //! @param a_gen : a random engine
+    RandomRadiusGenerator(FUNCTION_TYPE transform_, double r_min_, double r_max_) :
+        r_min{ r_min_ }, r_max{ r_max_ }, transform{ transform_ }, uniform_law(nullptr) {}
+    //! @brief : create the law with the given engine
+    //! @param a_gen : a random engine
+    //! @warning : this randomGenerator cannot be used without this
+    void set_random_generator(std::mt19937& a_gen) {
+        uniform_law.reset(new law::uniform<double>(0., 1., a_gen));
+    }
+    //! @return a radius randomly generated
+    double operator()() {
+        return transform((*uniform_law)());
+    }
+
+private:
+    double r_min;
+    double r_max;
+    FUNCTION_TYPE transform;
+    unique_ptr<law::uniform<double>> uniform_law;
+};
 
 namespace radius_generator_auxi {
 template<int DIM>

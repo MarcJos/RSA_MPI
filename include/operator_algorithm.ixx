@@ -30,7 +30,7 @@ void rsa_algo<DIM>::proceed_naive(std::mt19937& random_generator) {
 		bool may_outreach_nb_spheres = (total_nb_shots >= m_radius_generator.get_current_number());
 		int64_t nb_new_spheres_loc = single_draw(center_generator, priority_generator, nb_shots, may_outreach_nb_spheres);
 		int64_t nb_new_spheres_glob = rsa_mpi::compute_mpi_sum(nb_new_spheres_loc);
-		update_radius_generator(nb_new_spheres_glob);
+		m_radius_generator.update_placed(nb_new_spheres_glob);
 		bool should_continue = m_radius_generator.is_there_still_radii();
 		if (not should_continue) {
 			rsa_mpi::message("End of generation, due to lack of new radii");
@@ -104,7 +104,7 @@ void rsa_algo<DIM>::proceed_voxel(std::mt19937& random_generator) {
 
 		uint64_t nb_new_spheres_loc = single_draw(center_generator, priority_generator, nb_shots, may_outreach_nb_spheres);
 		uint64_t nb_new_spheres_glob = rsa_mpi::compute_mpi_sum(nb_new_spheres_loc);
-		update_radius_generator(nb_new_spheres_glob);
+		m_radius_generator.update_placed(nb_new_spheres_glob);
 		bool should_continue = m_radius_generator.is_there_still_radii();
 
 		// measure efficiency
@@ -241,11 +241,6 @@ int64_t rsa_algo<DIM>::single_draw(CenterGenerator& center_generator,
 	assert(check_no_doublon(this->get_grid()));
 	//
 	return nb_added_spheres;
-}
-
-template<int DIM>
-void rsa_algo<DIM>::update_radius_generator(int64_t nb_placed_spheres) {
-	m_radius_generator.update_placed(nb_placed_spheres);
 }
 
 template<int DIM, int method>
