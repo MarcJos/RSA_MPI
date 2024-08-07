@@ -100,26 +100,6 @@ void list_of_voxels<DIM>::subdivide_uncovered(const RSA_GRID& a_rsa_grid, double
 }
 
 template<int DIM>
-inline void list_of_voxels<DIM>::subdivide() {
-    if (size() == 0) { return; }
-    m_voxel_lengths *= 0.5;
-    //
-    int64_t old_size = this->size();
-    int64_t nb_corners = auxi_function::puissance<DIM>(2);
-    std::vector<DiscPoint<DIM>> new_voxel_coordinates(nb_corners * old_size);
-    for (size_t i = 0; i < old_size; i++) {
-        const auto& tabcorner = sac_de_billes::path::TabCorner<DIM>::get().getTab();
-        for (size_t j = 0; j < nb_corners; j++) {
-            for (size_t d = 0; d < DIM; d++) {
-                new_voxel_coordinates[i * nb_corners + j][d]
-                    = 2 * m_voxel_coordinates[i][d] + tabcorner[j][d];
-            }
-        }
-    }
-    swap(m_voxel_coordinates, new_voxel_coordinates);
-}
-
-template<int DIM>
 inline size_t list_of_voxels<DIM>::size() const {
     return m_voxel_coordinates.size();
 }

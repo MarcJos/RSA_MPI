@@ -41,7 +41,7 @@ private:
 	//! @brief r_max
 	double m_r_max;
 	//! @brief aims at missing about this rate
-	double miss_rate;
+	double aimed_miss_rate;
 
 public:
 	//! @brief Execute the RSA algorithm.
@@ -63,7 +63,7 @@ public:
 	//! given an already packed configuration, checks how much time the unavoidable voxellation process only requires
 	void check_vox_time();
 	//! @brief setter
-	void set_miss_rate(double miss_rate_) { miss_rate = miss_rate_; }
+	void set_miss_rate(double miss_rate_) { aimed_miss_rate = miss_rate_; }
 
 private:
 	//! @brief naive method without an underlying grid for performance comparison
@@ -105,7 +105,7 @@ private:
 		int nb_shots, uint64_t nb_spheres_total_max,
 		bool may_outreach_nb_spheres = true);
 	//! @return return the desired miss rate of the voxel strategy.
-	double desired_miss_rate() const { return miss_rate; };
+	double desired_miss_rate() const { return aimed_miss_rate; }
 };
 
 //! @brief Adds a sample to the main grid.

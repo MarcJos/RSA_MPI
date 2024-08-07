@@ -21,7 +21,7 @@ rsa_algo<DIM>::rsa_algo(rsa_domain<DIM>& a_domain, RadiusGenerator<DIM>& a_radiu
 	m_domain{ a_domain },
 	m_ghost_data{},
 	m_r_max{ a_radius_generator.get_max_radius() },
-	miss_rate{ auxi::magical_default_miss_rate<DIM>() } {
+	aimed_miss_rate{ auxi::magical_default_miss_rate<DIM>() } {
 	this->get_grid() = rsa_grid<DIM>(a_radius_generator.get_max_radius(), a_domain.get_ghost_layer(),
 		a_domain.get_inf(), a_domain.get_sup());
 	if (a_radius_generator.get_max_radius() > a_domain.get_m_rad()) {
