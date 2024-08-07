@@ -62,8 +62,6 @@ public:
     //! @param a_minimal_radius : minimal radius of the rsa simulation
     template<class RSA_GRID>
     void subdivide_uncovered(const RSA_GRID& rsa_cell, double a_minimal_radius);
-    //! @brief subdivide each voxel
-    void subdivide();
     //! @brief get the total number of voxels
     size_t size() const;
     //! @return the area of all the voxels

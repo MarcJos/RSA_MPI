@@ -25,19 +25,7 @@ public:
 	//! @param a_nbshots_singledraw : nb of local draws at each mpi proc, before exchanging with other procs
 	//! @param a_n_draw : for naive method, nb of draws
 	rsa_algo(rsa_domain<DIM>& a_domain, RadiusGenerator<DIM>& a_radius_generator,
-		int a_nbshots_singledraw, int a_n_draw = 10) :
-		m_nbshots_singledraw{ std::move(a_nbshots_singledraw) },
-		m_n_draw{ a_n_draw },
-		m_radius_generator{ a_radius_generator },
-		m_domain{ a_domain },
-		m_ghost_data{},
-		m_r_max{ a_radius_generator.get_max_radius() } {
-		this->get_grid() = rsa_grid<DIM>(a_radius_generator.get_max_radius(), a_domain.get_ghost_layer(),
-			a_domain.get_inf(), a_domain.get_sup());
-		if (a_radius_generator.get_max_radius() > a_domain.get_m_rad()) {
-			throw runtime_error("Impossible to have the maximal radius of radius generator larger than domain implicit radius");
-		}
-	}
+		int a_nbshots_singledraw, int a_n_draw = 10);
 
 private:
 	//! @brief desired number of shots for a single draw (idea : 1 draw = 1 MPI communication)
@@ -52,12 +40,14 @@ private:
 	rsa_data_storage<DIM> m_ghost_data;
 	//! @brief r_max
 	double m_r_max;
+	//! @brief aims at missing about this rate
+	double aimed_miss_rate;
 
 public:
 	//! @brief Execute the RSA algorithm.
 	//! @tparam method 1 is standard. 0 is for the naive method.
 	//! @param seed :for the pseudo-random generator.
-	template<int method>
+	template<int method, bool plog = false>
 	void proceed(size_t seed);
 	//! @brief: Reset the radius generator, but retains the already placed spheres.\n
 	//! Proceed can then be appealed once more.
@@ -72,13 +62,16 @@ public:
 
 	//! given an already packed configuration, checks how much time the unavoidable voxellation process only requires
 	void check_vox_time();
+	//! @brief setter
+	void set_miss_rate(double miss_rate_) { aimed_miss_rate = miss_rate_; }
 
 private:
 	//! @brief naive method without an underlying grid for performance comparison
 	//! @param random_generator 
 	void proceed_naive(std::mt19937& random_generator);
 	//! @brief best method from Ebeida et al
-	//! @param random_generator 
+	//! @param random_generator
+	template<bool plog = false>
 	void proceed_voxel(std::mt19937& random_generator);
 
 	//! @brief  Comput the (average) number of spheres that should be drawn, based on the number of voxels
@@ -94,6 +87,7 @@ private:
 	//! @brief decide to remove covered voxels or subdivide them, depending on miss_rate
 	//! @param miss_rate : observed miss rate in shots
 	//! @param uncovered_voxels : uncovered voxels for drawing random spheres
+	template<bool plog = false>
 	void update_covered_voxels(voxel_list::list_of_voxels<DIM>& uncovered_voxels,
 		double miss_rate);
 	//! @see : compute_intensity_poisson
@@ -105,14 +99,13 @@ private:
 	//! @param priority_generator : generate the priority of spheres, to know which one come first
 	//! @param nb_shots : desired nb of centers to be drawn, for each MPI process
 	//! @param may_outreach_nb_spheres : true if the number of shots is higher than the desired nb of spheres to be placed
-	template<class CenterGenerator, class PriorityGenerator>
-	int64_t single_draw(CenterGenerator& center_generator, PriorityGenerator& priority_generator, int nb_shots,
+	template<class CenterGenerator, class PriorityGenerator, class RadiusGenerator>
+	int64_t single_draw(CenterGenerator& center_generator, PriorityGenerator& priority_generator,
+		RadiusGenerator& a_radius_generator,
+		int nb_shots, uint64_t nb_spheres_total_max,
 		bool may_outreach_nb_spheres = true);
-
-	//! @brief update the radius generator
-	void update_radius_generator(int64_t nb_placed_spheres);
-	//! @return return the desired miss rate of the voxel strategy. (Magical constants.)
-	double desired_miss_rate() const;
+	//! @return return the desired miss rate of the voxel strategy.
+	double desired_miss_rate() const { return aimed_miss_rate; }
 };
 
 //! @brief Adds a sample to the main grid.
@@ -141,15 +134,16 @@ bool add_to_sample(
 //! @param a_center_generator : The center generator used to create sphere centers.
 //! @param a_size : The size of the sample.
 //! @param a_ghost_data : The data storage used to store temporarly ghost spheres.
-template<int DIM, typename CenterGenerator, class PriorityGenerator>
+template<int DIM, class CenterGenerator, class PriorityGenerator, class RadiusGenerator>
 int64_t generate_spheres(rsa_grid<DIM>& a_grid,
 	Buffers<DIM>& a_recv, Buffers<DIM>& a_send,
 	GhostAreas<DIM>& a_ghost_areas,
 	CenterGenerator& a_center_generator,
-	RadiusGenerator<DIM>& a_radius_generator,
+	RadiusGenerator& a_radius_generator,
 	PriorityGenerator& a_priority_generator,
-	int a_size,
 	rsa_data_storage<DIM>& a_ghost_data,
+	int a_size,
+	uint64_t nb_spheres_total_max,
 	bool may_outreach_nb_spheres);
 
 //! @brief Generate candidate spheres
@@ -159,18 +153,18 @@ int64_t generate_spheres(rsa_grid<DIM>& a_grid,
 //! @param a_radius_generator
 //! @param a_center_generator
 //! @param a_size : nb of generated spheres
-template<int DIM, typename CenterGenerator, class PriorityGenerator>
+template<int DIM, class CenterGenerator, class PriorityGenerator, class RadiusGenerator>
 rsa_data_storage<DIM> generate_candidates(
 	CenterGenerator& a_center_generator,
-	const RadiusGenerator<DIM>& a_radius_generator,
+	RadiusGenerator& a_radius_generator,
 	PriorityGenerator& a_priority_generator,
 	int a_size);
 
 //! @brief : This function generates a_size * a_n_draw spheres and try to add it in data_storage
-template<int DIM, int method>
+template<int DIM, int method = 1, bool plog = false>
 rsa_algo<DIM> uniform_generate(rsa_domain<DIM>& a_domain, double a_rad,
 	int a_size, int a_n_draw = 1, size_t seed = 0);
-template<int DIM, int method>
+template<int DIM, int method = 1, bool plog = false>
 rsa_algo<DIM> uniform_generate(rsa_domain<DIM>& a_domain,
 	sac_de_billes::RadiusGenerator<DIM>& radius_generator,
 	int a_size, int a_n_draw, size_t seed = 0);
@@ -222,6 +216,9 @@ vector<uint64_t> compute_conflict_cells(const rsa_data_storage<DIM>& a_spheres, 
 //! @param a_grid
 template<int DIM>
 void recompute_conflict_cells(const rsa_grid<DIM>& a_grid, std::vector<uint64_t>& a_cells_with_conflicts);
+//! @return the default miss rate of the voxel strategy. (Magical constants.)
+template<int DIM>
+double magical_default_miss_rate();
 } // namespace auxi
 
 //! @brief Generates a std::vector<INT_TYPE> of priorities.
