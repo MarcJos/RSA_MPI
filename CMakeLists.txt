@@ -3,15 +3,10 @@ project(rsa_mpi)
 set(CMAKE_CXX_STANDARD 17)
 
 set(CMAKE_BUILD_TYPE "Release")
-option(USE_ZOLTAN "Use the Zoltan toolkit" ON)
 
 #packages
 find_package(MPI REQUIRED)
 find_package(OpenMP REQUIRED)
-
-if(USE_ZOLTAN)
-  add_compile_options(-DUSE_ZOLTAN)
-endif(USE_ZOLTAN)
 
 # code coverage
 option(CODE_COVERAGE OFF)
@@ -28,18 +23,11 @@ add_definitions(-DOMPI_SKIP_MPICXX)
 include_directories(SYSTEM ${MPI_INCLUDE_PATH})
 add_executable(rsa command_line.cpp)
 target_include_directories(rsa PUBLIC include/)
-if(USE_ZOLTAN)
-  target_include_directories(rsa PUBLIC $ENV{zoltan_DIR}/include)
-  target_link_directories(rsa PUBLIC $ENV{zoltan_DIR}/lib)
-  target_link_libraries(rsa PUNLIC zoltan MPI::MPI_CXX OpenMP::OpenMP_CXX)
-else()
-  target_link_libraries(rsa PUBLIC MPI::MPI_CXX OpenMP::OpenMP_CXX)
-endif(USE_ZOLTAN)
-
 install(TARGETS rsa DESTINATION bin)
 
+target_link_libraries(rsa PUBLIC MPI::MPI_CXX OpenMP::OpenMP_CXX)
 
-target_compile_options(rsa PRIVATE -W -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings -Wctor-dtor-privacy -Wnon-virtual-dtor -Woverloaded-virtual -Wreturn-type -Wfloat-equal -Wno-endif-labels -Wmissing-format-attribute -Wno-multichar -Wno-deprecated-declarations -Wpacked -Wredundant-decls -Wunknown-pragmas -Wundef -Wreorder -Wno-conversion -Wdouble-promotion -Winit-self -Wlogical-op -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Wstrict-null-sentinel -Wtrampolines -Wvector-operation-performance -Wignored-qualifiers -Wsequence-point -Wsuggest-attribute=pure -Wsuggest-attribute=const -Wsuggest-attribute=noreturn -Wsuggest-attribute=format -Wswitch-bool -Wlogical-not-parentheses -Wsizeof-array-argument -Wbool-compare -Winline -Wshift-negative-value -Wshift-overflow -Wtautological-compare -Wnull-dereference -Wduplicated-cond -Wmisleading-indentation -Wduplicated-branches -Wregister -Wint-in-bool-context -Wsuggest-override -Wextra -pedantic -Wswitch -Wmissing-declarations -Wzero-as-null-pointer-constant -Wlong-long -Wno-switch-enum -Wno-covered-switch-default -Wno-covered-switch-default -Wno-sign-compare -Wno-missing-declarations -Wno-weak-vtables -Wno-unused-macros -Wsuggest-final-types -Wsuggest-final-methods)
+target_compile_options(rsa PRIVATE -W -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings -Wctor-dtor-privacy -Wnon-virtual-dtor -Woverloaded-virtual -Wreturn-type -Wfloat-equal -Wno-endif-labels -Wmissing-format-attribute -Wno-multichar -Wno-deprecated-declarations -Wpacked -Wredundant-decls -Wunknown-pragmas -Wundef -Wreorder -Wno-conversion -Wdouble-promotion -Winit-self -Wlogical-op -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Wstrict-null-sentinel -Wtrampolines -Wvector-operation-performance -Wignored-qualifiers -Wsequence-point -Wsuggest-attribute=const -Wsuggest-attribute=noreturn -Wsuggest-attribute=format -Wswitch-bool -Wlogical-not-parentheses -Wsizeof-array-argument -Wbool-compare -Wshift-negative-value -Wshift-overflow -Wtautological-compare -Wnull-dereference -Wduplicated-cond -Wmisleading-indentation -Wduplicated-branches -Wregister -Wint-in-bool-context -Wsuggest-override -Wextra -pedantic -Wswitch -Wmissing-declarations -Wzero-as-null-pointer-constant -Wlong-long -Wno-switch-enum -Wno-covered-switch-default -Wno-covered-switch-default -Wno-sign-compare -Wno-missing-declarations -Wno-weak-vtables -Wno-unused-macros -Wsuggest-final-types -Wsuggest-final-methods)
 
 add_subdirectory(Interface_python)
 
