@@ -87,6 +87,11 @@ protected:
     template<TypeCell typeCell, bool use_omp, class LambdaFunction, class ...Arrays>
     void apply_on_chosen_cells_id(const std::vector<uint64_t>& trasversed_cells, LambdaFunction& function, Arrays&... arrays);
 
+    const vec_d<DIM>& get_shift() const { return m_shift; }
+    const vec_d<DIM>& get_cell_length() const { return m_cell_length; }
+
+
+
 private:
     //! @brief : getter for the member m_ghost_traversal / m_edge_traversal  / real_traversal
     template<TypeCell typeCell>
