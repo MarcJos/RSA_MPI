@@ -43,6 +43,8 @@ public:
     //! @brief : This function fills the interval [being,end]
     //! according to the "inside" domain length
     void get_interval_inside(const int a_dim, double& begin, double& end) const;
+    //! getter
+    const vec_d<DIM>& get_cell_length() const { return m_cell_length; }
 
     template<TypeCell typeCell>
     bool is_type_cell(int idx) const;

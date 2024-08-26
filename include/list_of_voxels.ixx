@@ -9,9 +9,9 @@ using namespace sac_de_billes;
 using namespace std;
 
 template<int DIM>
-list_of_voxels<DIM>::list_of_voxels(Point<DIM> a_origin, Point<DIM> a_domain_length, double a_max_diagonal) :
+list_of_voxels<DIM>::list_of_voxels(Point<DIM> a_origin, Point<DIM> a_domain_length, Point<DIM> a_cell_length, double a_max_diagonal) :
     list_of_voxels(a_origin, list_of_voxels<DIM>::compute_nb_vox(a_domain_length, a_max_diagonal),
-        list_of_voxels<DIM>::compute_voxel_length(a_domain_length, a_max_diagonal)) {}
+        list_of_voxels<DIM>::compute_voxel_length(a_domain_length, a_cell_length, a_max_diagonal)) {}
 
 template<int DIM>
 list_of_voxels<DIM>::list_of_voxels(Point<DIM> a_origin, vec_i<DIM> a_nb_vox, Point<DIM> a_voxel_length) :
@@ -221,6 +221,7 @@ vec_i<DIM> list_of_voxels<DIM>::compute_nb_vox(const Point<DIM>& a_domain_length
 
 template<int DIM>
 Point<DIM> list_of_voxels<DIM>::compute_voxel_length(const Point<DIM>& a_domain_length,
+    Point<DIM> a_cell_length,
     double a_max_diagonal) {
     Point<DIM> ret;
     auto my_nb_vox = list_of_voxels<DIM>::compute_nb_vox(a_domain_length, a_max_diagonal);

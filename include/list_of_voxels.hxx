@@ -45,8 +45,9 @@ public:
     //! @brief constructor
     //! @param a_origin : origin of the domain
     //! @param a_domain_length : dimension of the domain
+    //! @param a_cell_length : dimension of the unit cell
     //! @param a_minradius : all voxels should have diagonal lesser than a_max_diagonal
-    list_of_voxels(Point<DIM> a_origin, Point<DIM> a_domain_length, double a_max_diagonal);
+    list_of_voxels(Point<DIM> a_origin, Point<DIM> a_domain_length, Point<DIM> a_cell_length, double a_max_diagonal);
     //! @brief constructor
     //! @param a_origin : origin of the domain
     //! @param a_nb_vox : nb of voxels in each DIM direction
@@ -104,8 +105,9 @@ private:
     static vec_i<DIM> compute_nb_vox(const Point<DIM>& a_domain_length, double a_max_diagonal);
     //! @return : the ideal voxel length given the parameters
     //! @param a_domain_length : total length of the domain
+    //! @param a_cell_length : dimension of the unit cell
     //! @param a_max_diagonal : each voxel should have diagonal < a_max_diagonal
-    static Point<DIM> compute_voxel_length(const Point<DIM>& a_domain_length, double a_max_diagonal);
+    static Point<DIM> compute_voxel_length(const Point<DIM>& a_domain_length, Point<DIM> a_cell_length, double a_max_diagonal);
     //! @brief : const getter
     const array<Point<DIM>, sac_de_billes::auxi_function::puissance<DIM>(2)>& get_corners_voxel() const { return m_corners_voxel; }
     //! @brief : setter
