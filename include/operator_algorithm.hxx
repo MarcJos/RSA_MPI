@@ -5,7 +5,7 @@
 #include <rsa_ghost_area.hxx>
 #include <rsa_domain.hxx>
 #include <rsa_random.hxx>
-#include <list_of_voxels.hxx>
+#include <list_of_cell_voxels.hxx>
 #include <operator_paraview.hxx>
 #include <operator_check_cell.hxx>
 #include <operator_ghost.hxx>
@@ -94,7 +94,8 @@ private:
 	//! @brief decide to remove covered voxels or subdivide them, depending on miss_rate
 	//! @param miss_rate : observed miss rate in shots
 	//! @param uncovered_voxels : uncovered voxels for drawing random spheres
-	void update_covered_voxels(voxel_list::list_of_voxels<DIM>& uncovered_voxels,
+	template<class LIST_VOXEL>
+	void update_covered_voxels(LIST_VOXEL& uncovered_voxels,
 		double miss_rate);
 	//! @see : compute_intensity_poisson
 	static constexpr double  m_intensity_factor = 0.01; // magical constant

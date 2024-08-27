@@ -30,7 +30,7 @@ list_of_voxels<DIM>::list_of_voxels(Point<DIM> a_origin, vec_i<DIM> a_nb_vox, Po
 template<int DIM>
 template<class RSA_GRID>
 void list_of_voxels<DIM>::remove_covered(const RSA_GRID& a_rsa_grid, double a_minimal_radius) {
-    int64_t old_size = this->size();
+    int64_t old_size = this->nb_voxels();
     BooleanVector is_voxel_covered(old_size, false);
     // tests if covered
 #pragma omp parallel for
@@ -58,10 +58,10 @@ template<class RSA_GRID>
 void list_of_voxels<DIM>::subdivide_uncovered(const RSA_GRID& a_rsa_grid, double a_minimal_radius) {
 
 
-    if (size() == 0) { return; }
+    if (this->nb_voxels() == 0) { return; }
     auto new_voxel_lengths = 0.5 * m_voxel_lengths; // size of voxels divided by 2.
     //
-    uint64_t old_size = this->size();
+    uint64_t old_size = this->nb_voxels();
     constexpr int nb_corners = auxi_function::puissance<DIM>(2);
 
     const auto& tabcorner = sac_de_billes::path::TabCorner<DIM>::get().getTab();
@@ -101,7 +101,7 @@ void list_of_voxels<DIM>::subdivide_uncovered(const RSA_GRID& a_rsa_grid, double
 
 template<int DIM>
 inline void list_of_voxels<DIM>::subdivide() {
-    if (size() == 0) { return; }
+    if (this->nb_voxels() == 0) { return; }
     m_voxel_lengths *= 0.5;
     //
     int64_t old_size = this->size();
@@ -120,15 +120,10 @@ inline void list_of_voxels<DIM>::subdivide() {
 }
 
 template<int DIM>
-inline size_t list_of_voxels<DIM>::size() const {
-    return m_voxel_coordinates.size();
-}
-
-template<int DIM>
 arr_vec_double<DIM> list_of_voxels<DIM>::pick_points(int64_t a_nb_pts, std::mt19937& random_generator) const {
     // init ret
     arr_vec_double<DIM> ret{};
-    if (this->size() == 0 and a_nb_pts != 0) {
+    if (this->nb_voxels() == 0 and a_nb_pts != 0) {
         std::cerr << __PRETTY_FUNCTION__ << std::endl;
         throw std::runtime_error("Impossible to draw centers in no voxels");
     }
@@ -136,7 +131,7 @@ arr_vec_double<DIM> list_of_voxels<DIM>::pick_points(int64_t a_nb_pts, std::mt19
     // uniform random distribution on (0, 1)
     law::uniform<double> coord_picker(0, 1, random_generator);
     // uniform random distribution for voxels
-    law::uniform<int> voxel_picker(0, this->size() - 1, random_generator);
+    law::uniform<int> voxel_picker(0, this->nb_voxels() - 1, random_generator);
     //
     for (int64_t i = 0; i < a_nb_pts; i++) {
         int64_t id_voxel = voxel_picker();
@@ -165,12 +160,20 @@ double list_of_voxels<DIM>::total_area() const {
 
 template<int DIM>
 inline Point<DIM> list_of_voxels<DIM>::orig_voxel(int64_t a_id_voxel) const {
-    Point<DIM> result = this->m_origin;
+    return auxi::orig_voxel<DIM>(this->m_origin, this->get_disc_coord(a_id_voxel), this->m_voxel_lengths);
+}
+
+template<int DIM>
+Point<DIM> auxi::orig_voxel(const Point<DIM>& origin,
+    const DiscPoint<DIM>& discPoint,
+    const Point<DIM>& voxel_lengths) {
+    Point<DIM> result = origin;
     for (int d = 0; d < DIM; d++) {
-        result[d] += get_disc_coord(a_id_voxel)[d] * m_voxel_lengths[d];
+        result[d] += discPoint[d] * voxel_lengths[d];
     }
     return result;
 }
+
 
 template<int DIM>
 inline Point<DIM> list_of_voxels<DIM>::center(int64_t a_id_voxel) const {

@@ -17,6 +17,9 @@ namespace voxel_list {
 using namespace sac_de_billes;
 using namespace std;
 
+template<int DIM>
+using VoxelCoordinates = array<int64_t, DIM>;
+
 //! @brief Class storing the voxels that may be not covered by existing spheres.
 //! @tparam DIM : space dimension
 template<int DIM>
@@ -33,7 +36,7 @@ private:
     //! i_m, j_m, k_m being the integer coordinates of the voxels
     //! the real coordinates are i_m * m_voxel_lengths[0], j_m * m_voxel_lengths[1], k_m * m_voxel_lengths[2]
     //! the 0 is considered to be in the domain (local coordinates, thus)
-    vector<array<int64_t, DIM>> m_voxel_coordinates;
+    vector<VoxelCoordinates<DIM>> m_voxel_coordinates;
     //! @brief : common size of each cell
     Point<DIM> m_voxel_lengths;
     //! coordinates of the origin of the domain
@@ -65,7 +68,7 @@ public:
     //! @brief subdivide each voxel
     void subdivide();
     //! @brief get the total number of voxels
-    size_t size() const;
+    size_t nb_voxels() const { return m_voxel_coordinates.size(); }
     //! @return the area of all the voxels
     double total_area() const;
 
@@ -94,6 +97,8 @@ public:
         const RSA_GRID& rsa_cell, double a_minimal_radius) const;
 
     void print(std::ostream& f) const;
+
+    const vector<VoxelCoordinates<DIM>>& get_voxel_coordinates() const { return m_voxel_coordinates; }
 
 private:
     //! @return : the discrete coordinates of the voxel. [0, 0, 0] is the left lowest corner of the rsa_domain
@@ -158,6 +163,10 @@ void get_list_of_spheres(const Point<DIM>& center_voxel, const Point<DIM>& voxel
 template<int DIM>
 void create_corners_voxel_inplace(const Point<DIM>& voxel_lengths,
     array<Point<DIM>, sac_de_billes::auxi_function::puissance<DIM>(2)>& corner_voxels);
+
+template<int DIM>
+Point<DIM> orig_voxel(const Point<DIM>& origin, const DiscPoint<DIM>& discPoint, const Point<DIM>& voxel_lengths);
+
 } // namespace  auxi
 
 

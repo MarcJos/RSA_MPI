@@ -46,7 +46,7 @@ void rsa_algo<DIM>::check_vox_time() {
 	voxel_list::list_of_voxels<DIM> uncovered_voxels(m_domain.get_inf(), m_domain.get_sup() - m_domain.get_inf(),
 		(m_radius_generator.get_max_radius() + m_radius_generator.get_min_radius()));
 	for (int draw = 0; true; draw++) {
-		int64_t total_nb_vox = rsa_mpi::compute_mpi_sum(static_cast<int64_t>(uncovered_voxels.size()));
+		int64_t total_nb_vox = rsa_mpi::compute_mpi_sum(static_cast<int64_t>(uncovered_voxels.nb_voxels()));
 		if (total_nb_vox == 0) {
 			rsa_mpi::message("End of check");
 			break;
@@ -85,10 +85,10 @@ void rsa_algo<DIM>::proceed_voxel(std::mt19937& random_generator) {
 
 	for (int draw = 0; true; draw++) {
 		//! warning : assumes all the rsa_domains are all equally subdivided with same voxel_lengths
-		double intensity = compute_intensity_poisson(uncovered_voxels.size());
+		double intensity = compute_intensity_poisson(uncovered_voxels.nb_voxels());
 		double maximum_intensity = rsa_mpi::compute_mpi_max(intensity);
 
-		uint64_t total_nb_vox = rsa_mpi::compute_mpi_sum(static_cast<int64_t>(uncovered_voxels.size()));
+		uint64_t total_nb_vox = rsa_mpi::compute_mpi_sum(static_cast<int64_t>(uncovered_voxels.nb_voxels()));
 		if (total_nb_vox == 0) {
 			rsa_mpi::message("[log rsa_mpi] End of algorithm : fully packed");
 			break;
@@ -163,7 +163,8 @@ double rsa_algo<DIM>::desired_miss_rate() const {
 }
 
 template<int DIM>
-void  rsa_algo<DIM>::update_covered_voxels(voxel_list::list_of_voxels<DIM>& uncovered_voxels,
+template<class LIST_VOXEL>
+void  rsa_algo<DIM>::update_covered_voxels(LIST_VOXEL& uncovered_voxels,
 	double miss_rate) {
 	if (miss_rate > desired_miss_rate()) {
 		uncovered_voxels.remove_covered(this->get_grid(), this->m_radius_generator.get_min_radius());
@@ -172,7 +173,7 @@ void  rsa_algo<DIM>::update_covered_voxels(voxel_list::list_of_voxels<DIM>& unco
 
 	constexpr bool plog = false;
 	if (plog) {
-		int64_t nb_voxels = uncovered_voxels.size();
+		int64_t nb_voxels = uncovered_voxels.nb_voxels();
 		int64_t max_nb_voxels = rsa_mpi::compute_mpi_max(nb_voxels);
 		int64_t total_nb_voxels = rsa_mpi::compute_mpi_sum(nb_voxels);
 		rsa_mpi::message("Total nb voxels: " + std::to_string(total_nb_voxels));
