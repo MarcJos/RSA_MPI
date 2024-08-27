@@ -32,7 +32,7 @@ void paraview(std::string a_name, const rsa_grid<DIM>& a_grid);
 //! @brief Exports grid data to Paraview files visualization purposes.
 //! @param a_domain : The domain containing the information to be exported.
 template<int DIM>
-void paraview(const rsa_domain<DIM>& a_domain, std::string a_name);
+void paraview(const rsa_domain<DIM>& a_domain, std::string a_name = "ParaviewOutput");
 } // namespace rsa_paraview
 
 #include <operator_paraview.ixx>

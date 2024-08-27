@@ -100,7 +100,7 @@ void paraview(std::string a_name, const rsa_grid<DIM>& a_grid) {
 		size_t n_spheres = cell_data.size();
 		for (size_t s = 0; s < n_spheres; s++) {
 			auto r = cell_data.get_center(s);
-			buff_r << r[0] << " " << r[1] << " " << r[2];
+			buff_r << r[0] << " " << r[1] << " " << r[2] << " ";
 			buff_id << cell_data.get_phase(s) << " ";
 			//buff_tag << int8_t(cell_data.get_tag(s)) << " ";
 			buff_tag << int(cell_data.get_tag(s)) << " ";
@@ -124,9 +124,8 @@ void paraview(std::string a_name, const rsa_grid<DIM>& a_grid) {
 }
 
 template<int DIM>
-void paraview(const rsa_domain<DIM>& a_domain) {
-	std::string name = "ParaviewOutput";
-	rsa_paraview::paraview(name, a_domain.get_grid());
+void paraview(const rsa_domain<DIM>& a_domain, std::string a_name) {
+	rsa_paraview::paraview(a_name, a_domain.get_grid());
 }
 
 template<int DIM>
