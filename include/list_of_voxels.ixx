@@ -155,7 +155,7 @@ inline Point<DIM> list_of_voxels<DIM>::corner(int64_t a_id_voxel, int64_t a_inde
 
 template<int DIM>
 double list_of_voxels<DIM>::total_area() const {
-    return this->size() * auxi_function::productOf<double>(m_voxel_lengths);
+    return this->nb_voxels() * auxi_function::productOf<double>(m_voxel_lengths);
 }
 
 template<int DIM>

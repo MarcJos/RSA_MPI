@@ -18,7 +18,7 @@ class list_of_cell_voxels : public rsa_grid_traversal<DIM> {
     //! assumptions:
     //! all voxels are of the same size m_length
 private:
-    std::vector<voxel_list::list_of_voxels<DIM>> m_list_voxel; ///< list of voxels per cell
+    std::vector<voxel_list::list_of_voxels<DIM>> m_list_voxel;
     uint64_t number_of_voxel;
 
 public:
@@ -80,9 +80,10 @@ public:
         //
         for (int64_t i = 0; i < a_nb_pts; i++) {
             int64_t id_voxel = voxel_picker();
-            Point<DIM> orig_voxel = auxi::orig_voxel(this->m_origin, *(pointer_to_voxels[id_voxel]), this->m_voxel_lengths);
+            const auto& voxel_list = this->m_list_voxel[get<0>(pointer_to_voxels[id_voxel])];
+            Point<DIM> orig_voxel = voxel_list.orig_voxel(get<1>(pointer_to_voxels[id_voxel]));
             for (int d = 0; d < DIM; d++) {
-                ret[i][d] = orig_voxel[d] + this->m_voxel_lengths[d] * coord_picker();
+                ret[i][d] = orig_voxel[d] + voxel_list.get_voxel_lengths()[d] * coord_picker();
             }
         }
         return ret;
@@ -91,18 +92,17 @@ public:
 private:
     double total_area_;
     size_t nb_voxels_;
-    //! @brief pointer to the voxels
-    std::vector<const VoxelCoordinates<DIM>*> pointer_to_voxels;
+    //! @brief : list of cell_id, voxel_id
+    std::vector<tuple<int64_t, int64_t>> pointer_to_voxels;
 
     void rebuild() {
         recompute_nb_voxels();
         recompute_total_area();
         pointer_to_voxels.reserve(nb_voxels());
         pointer_to_voxels.resize(0);
-        for (const auto& list_vox : m_list_voxel) {
-            const auto& vox_coord = list_vox.get_voxel_coordinates();
-            for (const auto& single_vox_coord : vox_coord) {
-                pointer_to_voxels.push_back(&single_vox_coord);
+        for (int64_t i = 0; i < m_list_voxel.size(); i++) {
+            for (int64_t j = 0; j < m_list_voxel[j].nb_voxels(); j++) {
+                pointer_to_voxels.push_back(tuple<int64_t, int64_t>{i, j});
             }
         }
     }
@@ -110,7 +110,7 @@ private:
     void recompute_nb_voxels() {
         nb_voxels_ = 0;
         for (size_t i = 0; i < this->size(); i++) {
-            nb_voxels_ += m_list_voxel[i].size();
+            nb_voxels_ += m_list_voxel[i].nb_voxels();
         }
     }
 
