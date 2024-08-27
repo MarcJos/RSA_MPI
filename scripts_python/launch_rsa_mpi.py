@@ -7,6 +7,7 @@ import time
 
 import rsa_mpi_py as rsa_mpi
 
+tic = time.time()
 
 rsa_mpi.set_nb_threads(1)
 
@@ -26,6 +27,8 @@ rsaalgo.proceed(seed)
 the_spheres = domain.extract_spheres()
 domain.paraview()
 
+
+print("Spent time : ", time.time() - tic)
 
 
 
