@@ -19,12 +19,12 @@ class list_of_cell_voxels : public rsa_grid_traversal<DIM> {
     //! all voxels are of the same size m_length
 private:
     std::vector<voxel_list::list_of_voxels<DIM>> m_list_voxel;
-    uint64_t number_of_voxel;
 
 public:
     //! @brief : constructor
     list_of_cell_voxels(const double a_rad, const vec_d<DIM>& a_inf, const vec_d<DIM>& a_sup, double a_max_diagonal)
-        : rsa_grid_traversal<DIM>(a_rad, 0, a_inf, a_sup), m_list_voxel{}, number_of_voxel{ 0 } {
+        : rsa_grid_traversal<DIM>(a_rad, 0, a_inf, a_sup), m_list_voxel{},
+        total_area_{ 0. }, nb_voxels_{ 0 }, pointer_to_voxels{}{
         m_list_voxel.reserve(this->size());
         //
         Point<DIM> origin = create_array<DIM>(0.);
@@ -34,6 +34,9 @@ public:
                 origin[d] = this->get_shift()[d] + disc_coord[d] * this->get_cell_length()[d];
             }
             m_list_voxel.push_back(list_of_voxels<DIM>(origin, this->get_cell_length(), a_max_diagonal));
+            if (this->is_ghost(i)) {
+                throw runtime_error("Unexpected!");
+            }
         }
         rebuild();
     };
@@ -98,11 +101,12 @@ private:
     void rebuild() {
         recompute_nb_voxels();
         recompute_total_area();
-        pointer_to_voxels.reserve(nb_voxels());
-        pointer_to_voxels.resize(0);
+        pointer_to_voxels.resize(nb_voxels());
+        int64_t k = 0;
         for (int64_t i = 0; i < m_list_voxel.size(); i++) {
-            for (int64_t j = 0; j < m_list_voxel[j].nb_voxels(); j++) {
-                pointer_to_voxels.push_back(tuple<int64_t, int64_t>{i, j});
+            for (int64_t j = 0; j < m_list_voxel[i].nb_voxels(); j++) {
+                pointer_to_voxels[k] = tuple<int64_t, int64_t>{ i, j };
+                k++;
             }
         }
     }
