@@ -65,4 +65,9 @@ add_executable(test_split_concatenate test_split_concatenate.cpp)
 target_include_directories(test_split_concatenate PUBLIC ../include/)
 add_test(NAME test_split_concatenate COMMAND ./test_split_concatenate)
 
+add_executable(test_cpp test_python.cpp)
+target_link_libraries(test_cpp MPI::MPI_CXX)
+target_include_directories(test_cpp PUBLIC ../include/)
+add_test(NAME test_cpp COMMAND ./test_cpp)
+
 add_test(NAME test_interface_2 COMMAND ./../rsa --dim 4 --radius 0.1 --seed 0 --size 10000 --inf 0, 0, 0, 0 --sup 1, 1, 1, 1)

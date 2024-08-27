@@ -69,7 +69,7 @@ void write_vtp(std::string name, size_t size,
 }
 
 template<int DIM>
-void paraview(std::string a_name, rsa_grid<DIM>& a_grid) {
+void paraview(std::string a_name, const rsa_grid<DIM>& a_grid) {
 	namespace fs = std::filesystem;
 	// mpi stuff
 	int rank, size;
@@ -124,8 +124,7 @@ void paraview(std::string a_name, rsa_grid<DIM>& a_grid) {
 }
 
 template<int DIM>
-void paraview(rsa_domain<DIM>& a_domain) 
-{
+void paraview(const rsa_domain<DIM>& a_domain) {
 	std::string name = "ParaviewOutput";
 	rsa_paraview::paraview(name, a_domain.get_grid());
 }

@@ -37,13 +37,14 @@ public:
     //! @brief : Print some general informations about the domain.
     void domain_log() const { rsa_domain_ptr_->domain_log(); }
     //! @brief : Create a VTK file with all particles over subdomains.
-    void paraview() const { rsa_paraview::paraview(*rsa_domain_ptr_); }
+    void paraview() const { rsa_paraview::paraview(this->get_pointed_to()); }
     //! @return list of spheres inside the domain
     //! @warning only on a single MPI processe
     std::vector<rsa_sphere<DIM>> extract_spheres() const { return rsa_domain_ptr_->extract_spheres(); }
 
     //! @return a reference to the underlying class (not interface)
     //! @warning: this is for a finer use.
+    const ::rsa_domain<DIM>& get_pointed_to() const { return *rsa_domain_ptr_; }
     ::rsa_domain<DIM>& get_pointed_to() { return *rsa_domain_ptr_; }
 
 
