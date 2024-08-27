@@ -87,6 +87,9 @@ public:
     //! coordinate of the center of the voxel
     Point<DIM> center(int64_t a_id_voxel) const;
 
+    const Point<DIM>& get_voxel_lengths() const { return m_voxel_lengths; }
+
+
     //! @return : if the voxel is covered by spheres stored in a_rsa_data_storage and pointed-to by a_rsa_grid
     //! the voxel is covered if covered by the sphere, the radius of which is incremented by a_minimal_radius
     //! @param a_id_voxel
