@@ -45,6 +45,11 @@ private:
     array<Point<DIM>, sac_de_billes::auxi_function::puissance<DIM>(2)> m_corners_voxel;
 
 public:
+    //! @brief defaut constructor
+    //! @param origin 
+    list_of_voxels(Point<DIM> origin) : m_voxel_coordinates{}, m_voxel_lengths(create_array<DIM>(0.)),
+        m_origin(origin), m_corners_voxel() {}
+
     //! @brief constructor
     //! @param a_origin : origin of the domain
     //! @param a_domain_length : dimension of the domain
