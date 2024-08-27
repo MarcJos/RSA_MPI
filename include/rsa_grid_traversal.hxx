@@ -72,6 +72,8 @@ public:
     //! @brief : This function computes the cell index from the cartesian position of the particle
     // DIM 3 : idx -> ijk (global ref) + apply shift in local ref
     uint64_t compute_cell_idx(const vec_d<DIM>& a_pos) const;
+    //! @brief : getter 
+    const vec_d<DIM>& get_cell_length() const { return m_cell_length; }
 
 protected:
     //! @brief  apply the Lambda for each cell index of desired type
@@ -88,7 +90,6 @@ protected:
     void apply_on_chosen_cells_id(const std::vector<uint64_t>& trasversed_cells, LambdaFunction& function, Arrays&... arrays);
 
     const vec_d<DIM>& get_shift() const { return m_shift; }
-    const vec_d<DIM>& get_cell_length() const { return m_cell_length; }
 
 
 

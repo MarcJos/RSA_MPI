@@ -43,8 +43,10 @@ void rsa_algo<DIM>::proceed_naive(std::mt19937& random_generator) {
 
 template<int DIM>
 void rsa_algo<DIM>::check_vox_time() {
-	voxel_list::list_of_cell_voxels<DIM> uncovered_voxels(this->get_grid(), m_domain.get_inf(), m_domain.get_sup() - m_domain.get_inf(),
-		(m_radius_generator.get_max_radius() + m_radius_generator.get_min_radius()));
+	//voxel_list::list_of_cell_voxels<DIM> uncovered_voxels(this->get_grid(), m_domain.get_inf(), m_domain.get_sup() - m_domain.get_inf(),
+	//	(m_radius_generator.get_max_radius() + m_radius_generator.get_min_radius()));
+	voxel_list::list_of_voxels<DIM> uncovered_voxels(m_domain.get_inf(), m_domain.get_sup() - m_domain.get_inf(),
+		(m_radius_generator.get_max_radius() + m_radius_generator.get_min_radius()), this->get_grid().get_cell_length());
 	for (int draw = 0; true; draw++) {
 		int64_t total_nb_vox = rsa_mpi::compute_mpi_sum(static_cast<int64_t>(uncovered_voxels.nb_voxels()));
 		if (total_nb_vox == 0) {
@@ -59,8 +61,10 @@ template<int DIM>
 void rsa_algo<DIM>::proceed_voxel(std::mt19937& random_generator) {
 	constexpr bool plog = false;
 	// create voxels for generating spheres
-	voxel_list::list_of_cell_voxels<DIM> uncovered_voxels(this->get_grid(), m_domain.get_inf(), m_domain.get_sup() - m_domain.get_inf(),
-		(m_r_max + m_radius_generator.get_min_radius()));
+	//voxel_list::list_of_cell_voxels<DIM> uncovered_voxels(this->get_grid(), m_domain.get_inf(), m_domain.get_sup() - m_domain.get_inf(),
+	//	(m_r_max + m_radius_generator.get_min_radius()));
+	voxel_list::list_of_voxels<DIM> uncovered_voxels(m_domain.get_inf(), m_domain.get_sup() - m_domain.get_inf(),
+		(m_r_max + m_radius_generator.get_min_radius()), this->get_grid().get_cell_length());
 	auto center_generator = [&uncovered_voxels, &random_generator](int size) {
 		return uncovered_voxels.pick_points(size, random_generator);
 		};

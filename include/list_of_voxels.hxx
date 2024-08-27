@@ -53,7 +53,13 @@ public:
     //! @brief constructor
     //! @param a_origin : origin of the domain
     //! @param a_domain_length : dimension of the domain
-    //! @param a_minradius : all voxels should have diagonal lesser than a_max_diagonal
+    //! @param a_max_diagonal : all voxels should have diagonal lesser than a_max_diagonal
+    //! @param a_cell_length : voxels should cover a_cell_length exactly
+    list_of_voxels(Point<DIM> a_origin, Point<DIM> a_domain_length, double a_max_diagonal, Point<DIM> a_cell_length);
+    //! @brief constructor
+    //! @param a_origin : origin of the domain
+    //! @param a_domain_length : dimension of the domain
+    //! @param a_max_diagonal : all voxels should have diagonal lesser than a_max_diagonal
     list_of_voxels(Point<DIM> a_origin, Point<DIM> a_domain_length, double a_max_diagonal);
     //! @brief constructor
     //! @param a_origin : origin of the domain
@@ -115,6 +121,7 @@ private:
     //! @param a_domain_length : total length of the domain
     //! @param a_max_diagonal : each voxel should have diagonal < a_max_diagonal
     static vec_i<DIM> compute_nb_vox(const Point<DIM>& a_domain_length, double a_max_diagonal);
+    static vec_i<DIM> compute_nb_vox(const Point<DIM>& a_domain_length, const Point<DIM>& a_cell_length, double a_max_diagonal);
     //! @return : the ideal voxel length given the parameters
     //! @param a_domain_length : total length of the domain
     //! @param a_max_diagonal : each voxel should have diagonal < a_max_diagonal

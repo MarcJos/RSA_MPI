@@ -14,6 +14,12 @@ list_of_voxels<DIM>::list_of_voxels(Point<DIM> a_origin, Point<DIM> a_domain_len
         list_of_voxels<DIM>::compute_voxel_length(a_domain_length, a_max_diagonal)) {}
 
 template<int DIM>
+list_of_voxels<DIM>::list_of_voxels(Point<DIM> a_origin, Point<DIM> a_domain_length, double a_max_diagonal, Point<DIM> a_cell_length) :
+    list_of_voxels(a_origin, list_of_voxels<DIM>::compute_nb_vox(a_domain_length, a_cell_length, a_max_diagonal),
+        list_of_voxels<DIM>::compute_voxel_length(a_cell_length, a_max_diagonal)) {}
+
+
+template<int DIM>
 list_of_voxels<DIM>::list_of_voxels(Point<DIM> a_origin, vec_i<DIM> a_nb_vox, Point<DIM> a_voxel_length) :
     m_voxel_coordinates{},
     m_voxel_lengths(a_voxel_length), m_origin(a_origin), m_corners_voxel{} {
@@ -218,6 +224,23 @@ vec_i<DIM> list_of_voxels<DIM>::compute_nb_vox(const Point<DIM>& a_domain_length
     vec_i<DIM> ret;
     for (int d = 0; d < DIM; d++) {
         ret[d] = 1 + static_cast<int>(sqrt(DIM) * a_domain_length[d] / a_max_diagonal);
+    }
+    return ret;
+}
+
+template<int DIM>
+vec_i<DIM> list_of_voxels<DIM>::compute_nb_vox(const Point<DIM>& a_domain_length,
+    const Point<DIM>& a_cell_length, double a_max_diagonal) {
+    vec_i<DIM> nb_vox_cell = list_of_voxels<DIM>::compute_nb_vox(a_cell_length, a_max_diagonal);
+    vec_i<DIM> multiplicator;
+    vec_i<DIM> ret;
+    for (int d = 0; d < DIM; d++) {
+        multiplicator[d] = static_cast<int>(floor(a_domain_length[d] / a_cell_length[d] + 0.5));
+        if (abs(multiplicator[d] * a_cell_length[d] - a_domain_length[d]) > 1e-9) {
+            cerr << __PRETTY_FUNCTION__ << endl;
+            throw runtime_error("Incompatible cell length and domain length");
+        }
+        ret[d] = nb_vox_cell[d] * multiplicator[d];
     }
     return ret;
 }
