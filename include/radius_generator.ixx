@@ -6,13 +6,14 @@
 
 namespace sac_de_billes {
 
-template<int DIM>
-RadiusGenerator<DIM>::RadiusGenerator(vector<tuple<double, uint64_t, int>> desired_radius_nb_phase_,
+template<int DIM, class RANDOM_RADIUS_GENERATOR>
+RadiusGenerator<DIM, RANDOM_RADIUS_GENERATOR>::RadiusGenerator(vector<tuple<double, uint64_t, int>> desired_radius_nb_phase_,
     double exclusion_distance_) :
     desired_radius_nb_phase(desired_radius_nb_phase_), // temporary
     exclusion_distance(exclusion_distance_),
     max_radius{ 0 }, min_radius{ 0 }, // temporary
-    current_index{ 0 } {
+    current_index{ 0 },
+    custom_radius_generator{ nullptr } {
     if (desired_radius_nb_phase.size() == 0) {
         throw runtime_error("Empty radius generator!");
     }
@@ -27,13 +28,45 @@ RadiusGenerator<DIM>::RadiusGenerator(vector<tuple<double, uint64_t, int>> desir
     exclusion_distance = exclusion_distance_;
 }
 
-template<int DIM>
-RadiusGenerator<DIM>::RadiusGenerator(vector<tuple<double, double, int>> desired_radius_volumeFraction_phase,
+template<int DIM, class RANDOM_RADIUS_GENERATOR>
+RadiusGenerator<DIM, RANDOM_RADIUS_GENERATOR>::RadiusGenerator(vector<tuple<double, double, int>> desired_radius_volumeFraction_phase,
     double volume, double exclusion_distance_) :
     RadiusGenerator(
         radius_generator_auxi::compute_desired_radius_nb_phase<DIM>(
             desired_radius_volumeFraction_phase, volume),
         exclusion_distance_) {}
+
+template<int DIM, class RANDOM_RADIUS_GENERATOR>
+RadiusGenerator<DIM, RANDOM_RADIUS_GENERATOR>::RadiusGenerator(double min_radius_, double max_radius_,
+    const RANDOM_RADIUS_GENERATOR* randomRadiusGenerator,
+    size_t desired_nb_spheres, double exclusion_distance_) :
+    desired_radius_nb_phase({ tuple<double, uint64_t, int>(0., desired_nb_spheres, 0) }),
+    exclusion_distance{ exclusion_distance_ },
+    max_radius{ max_radius_ },
+    min_radius{ min_radius_ },
+    current_index{ 0 },
+    custom_radius_generator{ randomRadiusGenerator } {}
+
+template<int DIM, class RANDOM_RADIUS_GENERATOR>
+std::tuple<vec_int, vec_double> RadiusGenerator<DIM, RANDOM_RADIUS_GENERATOR>::operator()(size_t a_size, std::mt19937& random_generator) const {
+    std::tuple<vec_int, vec_double> result;
+    if (not custom_radius_generator) {
+        result = std::tuple<vec_int, vec_double>(vec_int(a_size, this->get_current_phase()),
+            vec_double(a_size, this->get_current_radius()));
+    } else {
+        result = custom_radius_generator->operator()(a_size, random_generator);
+    }
+    return result;
+}
+
+template<int DIM, class RANDOM_RADIUS_GENERATOR>
+void RadiusGenerator<DIM, RANDOM_RADIUS_GENERATOR>::update_placed(size_t nb_placed_spheres) {
+    this->set_current_number(this->get_current_number() - nb_placed_spheres);
+    if (this->get_current_number() == 0) {
+        this->go_to_next_radius();
+    }
+}
+
 
 template<int DIM>
 vector<tuple<double, uint64_t, int>> radius_generator_auxi::compute_desired_radius_nb_phase(

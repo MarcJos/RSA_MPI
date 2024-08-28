@@ -54,6 +54,11 @@ target_include_directories(test_2D_full_voxel PUBLIC ../include/)
 add_test(NAME test_2D_full_voxel_serial COMMAND ./test_2D_full_voxel)
 add_test(NAME test_2D_full_voxel_mpi COMMAND mpirun -np 4 ./test_2D_full_voxel)
 
+add_executable(test_random_radius_generator test_random_radius_generator.cpp)
+target_link_libraries(test_random_radius_generator MPI::MPI_CXX )
+target_include_directories(test_random_radius_generator PUBLIC ../include/)
+add_test(NAME test_random_radius_generator_serial COMMAND ./test_random_radius_generator)
+add_test(NAME test_random_radius_generator_mpi COMMAND mpirun -np 4 ./test_random_radius_generator)
 
 add_executable(test_plugin_write_xyz test_plugin_write_xyz.cpp)
 target_link_libraries(test_plugin_write_xyz MPI::MPI_CXX OpenMP::OpenMP_CXX )
