@@ -40,35 +40,38 @@ private:
     //! @brief : common size of each cell
     Point<DIM> m_voxel_lengths;
     //! coordinates of the origin of the domain
-    const Point<DIM> m_origin;
+    const Point<DIM> m_global_origin;
     //! corners of voxels (the origin is at 0)
     array<Point<DIM>, sac_de_billes::auxi_function::puissance<DIM>(2)> m_corners_voxel;
 
 public:
     //! @brief defaut constructor
     //! @param origin 
-    list_of_voxels(Point<DIM> origin) : m_voxel_coordinates{}, m_voxel_lengths(create_array<DIM>(0.)),
-        m_origin(origin), m_corners_voxel() {}
-
+    list_of_voxels(Point<DIM> global_origin) : m_voxel_coordinates{}, m_voxel_lengths(create_array<DIM>(0.)),
+        m_global_origin(global_origin), m_corners_voxel() {}
     //! @brief constructor
+    //! @param a_global_origin : global origin of the domain
     //! @param a_origin : origin of the domain
     //! @param a_domain_length : dimension of the domain
     //! @param a_max_diagonal : all voxels should have diagonal lesser than a_max_diagonal
     //! @param a_cell_length : voxels should cover a_cell_length exactly
-    list_of_voxels(Point<DIM> a_origin, Point<DIM> a_domain_length, double a_max_diagonal, Point<DIM> a_cell_length);
+    list_of_voxels(Point<DIM> a_global_origin, Point<DIM> a_origin, Point<DIM> a_domain_length, double a_max_diagonal, Point<DIM> a_cell_length);
     //! @brief constructor
+    //! @param a_global_origin : global origin of the domain
     //! @param a_origin : origin of the domain
     //! @param a_domain_length : dimension of the domain
     //! @param a_max_diagonal : all voxels should have diagonal lesser than a_max_diagonal
-    list_of_voxels(Point<DIM> a_origin, Point<DIM> a_domain_length, double a_max_diagonal);
+    list_of_voxels(Point<DIM> a_global_origin, Point<DIM> a_origin, Point<DIM> a_domain_length, double a_max_diagonal);
     //! @brief constructor
+    //! @param a_global_origin : global origin of the domain
     //! @param a_origin : origin of the domain
     //! @param a_nb_vox : nb of voxels in each DIM direction
     //! @param a_voxel_length : voxel_length
-    list_of_voxels(Point<DIM> a_origin, vec_i<DIM> a_nb_vox, Point<DIM> a_voxel_length);
+    list_of_voxels(Point<DIM> a_global_origin, Point<DIM> a_origin, vec_i<DIM> a_shift, vec_i<DIM> a_nb_vox, Point<DIM> a_voxel_length);
     //! @brief remove all voxels totally covered by a sphere
     //! @param a_rsa_grid : implicitly, rsa_grid<DIM>
     //! @param a_minimal_radius : minimal radius of the rsa simulation
+
     template<class RSA_GRID>
     void remove_covered(const RSA_GRID& a_rsa_grid, double a_minimal_radius);
     //! @brief subdivide each voxel, but retain only those that are not covered by a sphere
@@ -88,23 +91,6 @@ public:
     //! @return : a_nb_pts randomly picked in the voxels (with uniform law)
     arr_vec_double<DIM> pick_points(int64_t a_nb_pts, std::mt19937& random_generator) const;
 
-    // Individual function for each voxel
-
-    //! \return the corner coordinates
-    //! \param a_index in {0, 1}^d
-    Point<DIM> corner(int64_t a_id_voxel, int64_t a_index) const;
-    //! coordinates of the closest corner to 0
-    Point<DIM> orig_voxel(int64_t a_id_voxel) const;
-    //! coordinate of the center of the voxel
-    Point<DIM> center(int64_t a_id_voxel) const;
-
-    //! @return : compute the absolute cell_id of a given voxel
-    //! @param a_id_voxel : id of the voxel
-    //! @param rsa_grid_traversal_ : given rsa_grid_traversal
-    int64_t compute_absolute_cell_idx(int64_t a_id_voxel, const auto& rsa_grid_traversal_) const {
-        return rsa_grid_traversal_.compute_absolute_cell_idx(this->center(a_id_voxel));
-    }
-
     //! @brief : conditional traversal on voxels
     //! @param function_to_be_applied : function to be applied on a voxel
     //! @param test  : test if the absolute_cell_id
@@ -116,6 +102,8 @@ public:
     //! @brief remove selected voxels depending on the test on the absolute cell_id associated to a a voxel
     //! @param test : test on the absolute cell_id associated to a voxel
     //! @param selected_voxel_coordinates : coordinates of the voxels are to be put here
+    //! @param m_voxel_lengths_ : common voxel length. For recording.
+    //! @param m_voxel_lengths_ : origin. For recording.
     //! @param rsa_grid_traversal_ : rsa_grid_traversal
     template<class TEST_ID>
     void pop_voxels_depending_on_absolute_cell_idx(TEST_ID test,
@@ -124,6 +112,28 @@ public:
 
     //! @brief const getter
     const Point<DIM>& get_voxel_lengths() const { return m_voxel_lengths; }
+
+    void print(std::ostream& f) const;
+
+    const vector<VoxelCoordinates<DIM>>& get_voxel_coordinates() const { return m_voxel_coordinates; }
+
+private:
+    //! @return : compute the absolute cell_id of a given voxel
+    //! @param a_id_voxel : id of the voxel
+    //! @param rsa_grid_traversal_ : given rsa_grid_traversal
+    int64_t compute_absolute_cell_idx(int64_t a_id_voxel, const auto& rsa_grid_traversal_) const {
+        return rsa_grid_traversal_.compute_absolute_cell_idx(this->center(a_id_voxel));
+    }
+
+    // Individual function for each voxel
+
+    //! \return the corner coordinates
+    //! \param a_index in {0, 1}^d
+    Point<DIM> corner(int64_t a_id_voxel, int64_t a_index) const;
+    //! coordinates of the closest corner to 0
+    Point<DIM> orig_voxel(int64_t a_id_voxel) const;
+    //! coordinate of the center of the voxel
+    Point<DIM> center(int64_t a_id_voxel) const;
 
     //! @return : if the voxel is covered by spheres stored in a_rsa_data_storage and pointed-to by a_rsa_grid
     //! the voxel is covered if covered by the sphere, the radius of which is incremented by a_minimal_radius
@@ -134,11 +144,6 @@ public:
     bool is_covered(int64_t a_id_voxel,
         const RSA_GRID& rsa_cell, double a_minimal_radius) const;
 
-    void print(std::ostream& f) const;
-
-    const vector<VoxelCoordinates<DIM>>& get_voxel_coordinates() const { return m_voxel_coordinates; }
-
-private:
     //! @brief remove depending on a test on voxel_id
     template<class TEST>
     void remove_if(TEST test);
@@ -149,6 +154,7 @@ private:
     //! @param a_max_diagonal : each voxel should have diagonal < a_max_diagonal
     static vec_i<DIM> compute_nb_vox(const Point<DIM>& a_domain_length, double a_max_diagonal);
     static vec_i<DIM> compute_nb_vox(const Point<DIM>& a_domain_length, const Point<DIM>& a_cell_length, double a_max_diagonal);
+    static vec_i<DIM> compute_shift_nb_vox(Point<DIM> a_global_origin, Point<DIM> a_origin, Point<DIM> a_cell_length);
     //! @return : the ideal voxel length given the parameters
     //! @param a_domain_length : total length of the domain
     //! @param a_max_diagonal : each voxel should have diagonal < a_max_diagonal

@@ -60,6 +60,8 @@ public:
 	const rsa_grid<DIM>& get_grid() const { return m_grid; }
 	//! @brief Accesor used to get the inf boundary
 	const vec_d<DIM>& get_inf() const { return m_inf; }
+	//! @brief Accesor used to get the global inf boundary
+	const vec_d<DIM>& get_global_inf() const { return m_global_inf; }
 	//! @brief Accesor used to get the sup boundary
 	const vec_d<DIM>& get_sup() const { return m_sup; }
 	//! @brief Accesor used to get the number of host_layer

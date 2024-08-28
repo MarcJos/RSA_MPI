@@ -5,7 +5,7 @@
 #include <rsa_ghost_area.hxx>
 #include <rsa_domain.hxx>
 #include <rsa_random.hxx>
-#include <list_of_cell_voxels.hxx>
+#include <list_of_voxels.hxx>
 #include <operator_paraview.hxx>
 #include <operator_check_cell.hxx>
 #include <operator_ghost.hxx>

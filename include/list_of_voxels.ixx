@@ -9,25 +9,32 @@ using namespace sac_de_billes;
 using namespace std;
 
 template<int DIM>
-list_of_voxels<DIM>::list_of_voxels(Point<DIM> a_origin, Point<DIM> a_domain_length, double a_max_diagonal) :
-    list_of_voxels(a_origin, list_of_voxels<DIM>::compute_nb_vox(a_domain_length, a_max_diagonal),
+list_of_voxels<DIM>::list_of_voxels(Point<DIM> a_global_origin, Point<DIM> a_origin, Point<DIM> a_domain_length, double a_max_diagonal) :
+    list_of_voxels(a_global_origin, a_origin,
+        a_domain_length, a_max_diagonal,
         list_of_voxels<DIM>::compute_voxel_length(a_domain_length, a_max_diagonal)) {}
 
 template<int DIM>
-list_of_voxels<DIM>::list_of_voxels(Point<DIM> a_origin, Point<DIM> a_domain_length, double a_max_diagonal, Point<DIM> a_cell_length) :
-    list_of_voxels(a_origin, list_of_voxels<DIM>::compute_nb_vox(a_domain_length, a_cell_length, a_max_diagonal),
+list_of_voxels<DIM>::list_of_voxels(Point<DIM> a_global_origin, Point<DIM> a_origin, Point<DIM> a_domain_length, double a_max_diagonal, Point<DIM> a_cell_length) :
+    list_of_voxels(a_global_origin, a_origin,
+        list_of_voxels<DIM>::compute_shift_nb_vox(a_global_origin, a_origin, list_of_voxels<DIM>::compute_voxel_length(a_cell_length, a_max_diagonal)),
+        list_of_voxels<DIM>::compute_nb_vox(a_domain_length, a_cell_length, a_max_diagonal),
         list_of_voxels<DIM>::compute_voxel_length(a_cell_length, a_max_diagonal)) {}
 
 
 template<int DIM>
-list_of_voxels<DIM>::list_of_voxels(Point<DIM> a_origin, vec_i<DIM> a_nb_vox, Point<DIM> a_voxel_length) :
+list_of_voxels<DIM>::list_of_voxels(Point<DIM> a_global_origin, Point<DIM> a_origin,
+    vec_i<DIM> a_shift,
+    vec_i<DIM> a_nb_vox, Point<DIM> a_voxel_length) :
     m_voxel_coordinates{},
-    m_voxel_lengths(a_voxel_length), m_origin(a_origin), m_corners_voxel{} {
+    m_voxel_lengths(a_voxel_length),
+    m_global_origin(a_global_origin),
+    m_corners_voxel{} {
     array<array<int, 2>, DIM> limits;
     // warning : not very efficient!
     for (int d = 0; d < DIM; d++) {
-        limits[d][0] = 0;
-        limits[d][1] = a_nb_vox[d];
+        limits[d][0] = 0 + a_shift[d];
+        limits[d][1] = a_nb_vox[d] + a_shift[d];
     }
     m_voxel_coordinates = sac_de_billes::getAllIndices<DIM, int64_t>(limits);
     auxi::create_corners_voxel_inplace<DIM>(m_voxel_lengths, m_corners_voxel);
@@ -96,7 +103,7 @@ void list_of_voxels<DIM>::subdivide_uncovered(const RSA_GRID& a_rsa_grid, double
             for (size_t d = 0; d < DIM; d++) {
                 int64_t new_vox_coord = 2 * m_voxel_coordinates[i][d] + tabcorner[i_corner][d];
                 new_voxel_coordinates[k][d] = new_vox_coord;
-                origin_voxel[d] = m_origin[d] + new_vox_coord * new_voxel_lengths[d];
+                origin_voxel[d] = m_global_origin[d] + new_vox_coord * new_voxel_lengths[d];
             }
             // only retain voxels that are not covered
             if (not auxi::is_covered<DIM>(origin_voxel, new_corners_voxel, a_rsa_grid, a_minimal_radius, list_of_cell_id_sphere_id)) {
@@ -159,7 +166,7 @@ arr_vec_double<DIM> list_of_voxels<DIM>::pick_points(int64_t a_nb_pts, std::mt19
 
 template<int DIM>
 inline Point<DIM> list_of_voxels<DIM>::corner(int64_t a_id_voxel, int64_t a_index) const {
-    Point<DIM> result = this->m_origin;
+    Point<DIM> result = this->m_global_origin;
     const auto& discCorner = sac_de_billes::path::TabCorner<DIM>::get().getTab()[a_index];
     for (int d = 0; d < DIM; d++) {
         result[d] += (discCorner[d] + get_disc_coord(a_id_voxel)[d]) * m_voxel_lengths[d];
@@ -174,7 +181,7 @@ double list_of_voxels<DIM>::total_area() const {
 
 template<int DIM>
 inline Point<DIM> list_of_voxels<DIM>::orig_voxel(int64_t a_id_voxel) const {
-    return auxi::orig_voxel<DIM>(this->m_origin, this->get_disc_coord(a_id_voxel), this->m_voxel_lengths);
+    return auxi::orig_voxel<DIM>(this->m_global_origin, this->get_disc_coord(a_id_voxel), this->m_voxel_lengths);
 }
 
 template<int DIM>
@@ -191,7 +198,7 @@ Point<DIM> auxi::orig_voxel(const Point<DIM>& origin,
 
 template<int DIM>
 inline Point<DIM> list_of_voxels<DIM>::center(int64_t a_id_voxel) const {
-    Point<DIM> result = this->m_origin;
+    Point<DIM> result = this->m_global_origin;
     for (int d = 0; d < DIM; d++) {
         result[d] += (get_disc_coord(a_id_voxel)[d] + 0.5) * m_voxel_lengths[d];
     }
@@ -224,6 +231,19 @@ bool list_of_voxels<DIM>::is_covered(int64_t a_id_voxel,
 template<int DIM>
 inline DiscPoint<DIM> list_of_voxels<DIM>::get_disc_coord(int64_t a_id_voxel) const {
     return m_voxel_coordinates[a_id_voxel];
+}
+
+template<int DIM>
+vec_i<DIM> list_of_voxels<DIM>::compute_shift_nb_vox(Point<DIM> a_global_origin,
+    Point<DIM> a_origin, Point<DIM> a_cell_length) {
+    vec_i<DIM> ret;
+    for (int d = 0; d < DIM; d++) {
+        ret[d] = std::floor(0.5 + (a_origin[d] - a_global_origin[d]) / a_cell_length[d]);
+        if (abs((a_origin[d] - a_global_origin[d]) - ret[d] * a_cell_length[d]) > 1e-9) {
+            throw runtime_error("Incoherent origin and global origin");
+        }
+    }
+    return ret;
 }
 
 template<int DIM>
