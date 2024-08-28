@@ -2,6 +2,8 @@
 //! 
 #pragma once
 
+#include<auxiliary/AuxiFunctions.hxx>
+
 template<int DIM>
 rsa_grid_traversal<DIM>::rsa_grid_traversal(const double a_rad, const int a_ghost_layer,
     const vec_d<DIM>& a_inf, const vec_d<DIM>& a_sup) {
@@ -377,6 +379,17 @@ uint64_t rsa_grid_traversal<DIM>::compute_cell_idx(const vec_d<DIM>& a_pos) cons
         int64_t ijk_d = (a_pos[d] - m_shift[d]) * m_cell_inverse_length[d];
         assert(ijk_d >= 0);
         ret = ret * m_n[d] + ijk_d;
+    }
+    return ret;
+}
+
+template<int DIM>
+uint64_t rsa_grid_traversal<DIM>::compute_absolute_cell_idx(const vec_d<DIM>& a_absolute_pos) const {
+    uint64_t ret = 0;
+    for (int d = DIM - 1; d >= 0; d--) {
+        int64_t ijk_d = a_absolute_pos[d] * m_cell_inverse_length[d];
+        assert(ijk_d >= 0);
+        ret = ret * sac_de_billes::auxi_function::puissance<60 / DIM>(2) + ijk_d;
     }
     return ret;
 }

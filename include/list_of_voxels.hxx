@@ -98,8 +98,32 @@ public:
     //! coordinate of the center of the voxel
     Point<DIM> center(int64_t a_id_voxel) const;
 
-    const Point<DIM>& get_voxel_lengths() const { return m_voxel_lengths; }
+    //! @return : compute the absolute cell_id of a given voxel
+    //! @param a_id_voxel : id of the voxel
+    //! @param rsa_grid_traversal_ : given rsa_grid_traversal
+    int64_t compute_absolute_cell_idx(int64_t a_id_voxel, const auto& rsa_grid_traversal_) const {
+        return rsa_grid_traversal_.compute_absolute_cell_idx(this->center(a_id_voxel));
+    }
 
+    //! @brief : conditional traversal on voxels
+    //! @param function_to_be_applied : function to be applied on a voxel
+    //! @param test  : test if the absolute_cell_id
+    //! @param rsa_grid_traversal_ : rsa_grid_traversal
+    template<class FUNCTION, class TEST_ID>
+    void apply_function_depending_on_absolute_cell_idx(FUNCTION function_to_be_applied, TEST_ID test,
+        const auto& rsa_grid_traversal_);
+
+    //! @brief remove selected voxels depending on the test on the absolute cell_id associated to a a voxel
+    //! @param test : test on the absolute cell_id associated to a voxel
+    //! @param selected_voxel_coordinates : coordinates of the voxels are to be put here
+    //! @param rsa_grid_traversal_ : rsa_grid_traversal
+    template<class TEST_ID>
+    void pop_voxels_depending_on_absolute_cell_idx(TEST_ID test,
+        vector<VoxelCoordinates<DIM>>& selected_voxel_coordinates,
+        const auto& rsa_grid_traversal_);
+
+    //! @brief const getter
+    const Point<DIM>& get_voxel_lengths() const { return m_voxel_lengths; }
 
     //! @return : if the voxel is covered by spheres stored in a_rsa_data_storage and pointed-to by a_rsa_grid
     //! the voxel is covered if covered by the sphere, the radius of which is incremented by a_minimal_radius
@@ -115,6 +139,9 @@ public:
     const vector<VoxelCoordinates<DIM>>& get_voxel_coordinates() const { return m_voxel_coordinates; }
 
 private:
+    //! @brief remove depending on a test on voxel_id
+    template<class TEST>
+    void remove_if(TEST test);
     //! @return : the discrete coordinates of the voxel. [0, 0, 0] is the left lowest corner of the rsa_domain
     DiscPoint<DIM> get_disc_coord(int64_t a_id_voxel) const;
     //! @return : the ideal number of voxels is each direction, given the parameters

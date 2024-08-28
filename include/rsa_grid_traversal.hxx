@@ -72,6 +72,9 @@ public:
     //! @brief : This function computes the cell index from the cartesian position of the particle
     // DIM 3 : idx -> ijk (global ref) + apply shift in local ref
     uint64_t compute_cell_idx(const vec_d<DIM>& a_pos) const;
+    //! @brief : This function computes the absolute cell index from the cartesian position of the particle
+    //! @param a_absolute_pos : position of a point
+    uint64_t compute_absolute_cell_idx(const vec_d<DIM>& a_absolute_pos) const;
     //! @brief : getter 
     const vec_d<DIM>& get_cell_length() const { return m_cell_length; }
 

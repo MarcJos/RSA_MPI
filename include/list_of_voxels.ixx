@@ -34,17 +34,15 @@ list_of_voxels<DIM>::list_of_voxels(Point<DIM> a_origin, vec_i<DIM> a_nb_vox, Po
 }
 
 template<int DIM>
-template<class RSA_GRID>
-void list_of_voxels<DIM>::remove_covered(const RSA_GRID& a_rsa_grid, double a_minimal_radius) {
+template<class TEST>
+void list_of_voxels<DIM>::remove_if(TEST test) {
     int64_t old_size = this->nb_voxels();
     BooleanVector is_voxel_covered(old_size, false);
-    // tests if covered
-#pragma omp parallel for
+    // tests
     for (int64_t id_vox = 0; id_vox < old_size; id_vox++) {
-        is_voxel_covered[id_vox] = auxi::is_covered<DIM>(this->orig_voxel(id_vox), m_voxel_lengths,
-            this->get_corners_voxel(), a_rsa_grid, a_minimal_radius);
+        is_voxel_covered[id_vox] = test(id_vox);
     }
-    // remove covered voxels
+    // remove
     for (int64_t id_vox = 0; id_vox < old_size; id_vox++) {
         if (is_voxel_covered[id_vox]) {
             std::memcpy(&(m_voxel_coordinates[id_vox]),
@@ -57,6 +55,16 @@ void list_of_voxels<DIM>::remove_covered(const RSA_GRID& a_rsa_grid, double a_mi
     }
     // last coordinates are not used, because of covered_voxels
     m_voxel_coordinates.resize(old_size);
+}
+
+template<int DIM>
+template<class RSA_GRID>
+void list_of_voxels<DIM>::remove_covered(const RSA_GRID& a_rsa_grid, double a_minimal_radius) {
+    auto test_covered = [&](size_t id_vox) {
+        return auxi::is_covered<DIM>(this->orig_voxel(id_vox), this->m_voxel_lengths,
+            this->get_corners_voxel(), a_rsa_grid, a_minimal_radius);
+        };
+    remove_if(test_covered);
 }
 
 template<int DIM>
@@ -361,6 +369,32 @@ void auxi::create_corners_voxel_inplace(const Point<DIM>& voxel_lengths,
             corners_voxel[i][d] = tabCorner[i][d] * voxel_lengths[d];
         }
     }
+}
+
+template<int DIM>
+template<class FUNCTION, class TEST_ID>
+void list_of_voxels<DIM>::apply_function_depending_on_absolute_cell_idx(FUNCTION function_to_be_applied, TEST_ID test,
+    const auto& rsa_grid_traversal_) {
+    for (int64_t id_voxel = 0; id_voxel < nb_voxels(); id_voxel++) {
+        if (test(compute_absolute_cell_idx(id_voxel, rsa_grid_traversal_))) {
+            function_to_be_applied(id_voxel);
+        }
+    }
+}
+
+template<int DIM>
+template<class TEST_ID>
+void list_of_voxels<DIM>::pop_voxels_depending_on_absolute_cell_idx(TEST_ID test,
+    vector<VoxelCoordinates<DIM>>& selected_voxel_coordinates,
+    const auto& rsa_grid_traversal_) {
+    auto pop_single_voxel = [&](const auto id_voxel) {
+        if (test(compute_absolute_cell_idx(id_voxel, rsa_grid_traversal_))) {
+            selected_voxel_coordinates.push_back(this->m_voxel_coordinates[id_voxel]);
+            return true;
+        }
+        return false;
+        };
+    remove_if(pop_single_voxel);
 }
 
 } // namespace  voxel_list
