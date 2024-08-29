@@ -417,4 +417,11 @@ void list_of_voxels<DIM>::pop_voxels_depending_on_absolute_cell_idx(TEST_ID test
     remove_if(pop_single_voxel);
 }
 
+template<int DIM>
+void list_of_voxels<DIM>::insert_voxels(
+    const vector<VoxelCoordinates<DIM>>& voxel_absolute_coordinates) {
+    this->m_voxel_coordinates.insert(this->m_voxel_coordinates.end(),
+        voxel_absolute_coordinates.begin(), voxel_absolute_coordinates.end());
+}
+
 } // namespace  voxel_list

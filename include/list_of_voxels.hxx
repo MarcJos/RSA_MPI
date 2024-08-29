@@ -109,6 +109,9 @@ public:
     void pop_voxels_depending_on_absolute_cell_idx(TEST_ID test,
         vector<VoxelCoordinates<DIM>>& selected_voxel_coordinates,
         const auto& rsa_grid_traversal_);
+    //! @brief : insert new voxels:
+    //! @param voxel_absolute_coordinates : absolute coordinates of the origins of the voxels
+    void insert_voxels(const vector<VoxelCoordinates<DIM>>& voxel_absolute_coordinates);
 
     //! @brief const getter
     const Point<DIM>& get_voxel_lengths() const { return m_voxel_lengths; }
