@@ -518,13 +518,13 @@ int64_t auxi::retain_only_first_elements(rsa_grid<DIM>& a_grid,
 	return nb_undecided;
 }
 
-void print_draw_size(int a_draw_size) {
+inline void print_draw_size(int a_draw_size) {
 	int global = 0;
 	MPI_Allreduce(&a_draw_size, &global, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
 	rsa_mpi::message("--> Number of spheres in the sample", global);
 }
 
-void print_log(int number_of_conflicts, int number_of_particles) {
+inline void print_log(int number_of_conflicts, int number_of_particles) {
 	int global[2] = { 0,0 };
 	int local[2] = { number_of_conflicts,number_of_particles };
 	MPI_Allreduce(local, global, 2, MPI_INT, MPI_SUM, MPI_COMM_WORLD);

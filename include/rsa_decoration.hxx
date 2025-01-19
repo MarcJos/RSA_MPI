@@ -9,34 +9,34 @@
 namespace rsa_mpi {
 
 
-uint64_t compute_mpi_sum(uint64_t local_quantity) {
+inline uint64_t compute_mpi_sum(uint64_t local_quantity) {
 	uint64_t ret = 0;
 	MPI_Allreduce(&local_quantity, &ret, 1, MPI_UINT64_T, MPI_SUM, MPI_COMM_WORLD);
 	return ret;
 }
 
-int64_t compute_mpi_sum(int64_t local_quantity) {
+inline int64_t compute_mpi_sum(int64_t local_quantity) {
 	int64_t ret = 0;
 	MPI_Allreduce(&local_quantity, &ret, 1, MPI_LONG_LONG, MPI_SUM, MPI_COMM_WORLD);
 	return ret;
 }
 
-double compute_mpi_sum(double local_quantity) {
+inline double compute_mpi_sum(double local_quantity) {
 	double ret = 0;
 	MPI_Allreduce(&local_quantity, &ret, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 	return ret;
 }
 
 template<class T>
-int compute_mpi_sum(T) = delete;
+inline int compute_mpi_sum(T) = delete;
 
-double compute_mpi_max(double local_quantity) {
+inline double compute_mpi_max(double local_quantity) {
 	double ret = 0;
 	MPI_Allreduce(&local_quantity, &ret, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
 	return ret;
 }
 
-double compute_mpi_average(double local_quantity) {
+inline double compute_mpi_average(double local_quantity) {
 	double average_quantity = 0.;
 	auto comm = MPI_COMM_WORLD;
 	int mpi_size = 0;
@@ -46,7 +46,7 @@ double compute_mpi_average(double local_quantity) {
 	return average_quantity;
 }
 
-int get_number_of_mpi_processes() {
+inline int get_number_of_mpi_processes() {
 	auto comm = MPI_COMM_WORLD;
 	int mpi_size = 0;
 	MPI_Comm_size(comm, &mpi_size);
@@ -54,14 +54,14 @@ int get_number_of_mpi_processes() {
 }
 
 /** @brief This function intializes the variable to -1 if it's the first call, otherwise it return my_rank. The default value is -1 to force the user to set it to the mpi rank with the function set_my_rank. */
-int get_my_rank() {
+inline int get_my_rank() {
 	int my_rank = -1;
 	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 	return my_rank;
 }
 
 /** @brief This functions return true if the current mpi process is the master rank, ie the mpi_rank == 0. */
-bool is_master_rank() {
+inline bool is_master_rank() {
 	constexpr int master_rank = 0;
 	bool ret = (master_rank == get_my_rank());
 	return ret;
@@ -70,7 +70,7 @@ bool is_master_rank() {
 
 /** @brief This function returns the result of a boolean test only made on the master processor **/
 template<class TEST>
-bool test_only_on_master(TEST test) {
+inline bool test_only_on_master(TEST test) {
 	bool result = false;
 	if (is_master_rank()) {
 		result = test();
@@ -97,13 +97,13 @@ void message(Arg a_arg, Args... a_args) {
 	}
 }
 
-void banner() {
+inline void banner() {
 	message("================= ===== ================= ");
 	message("==== rsa_algo with mpi parallelization == ");
 	message("================= start ================= ");
 }
 
-void bye_bye_message() {
+inline void bye_bye_message() {
 	message("=========== end ===========");
 }
 
@@ -115,7 +115,7 @@ void init(Args... a_args) {
 	banner();
 }
 
-void finalize() {
+inline void finalize() {
 	bye_bye_message();
 	[[maybe_unused]] auto success = MPI_Finalize();
 	assert(success == MPI_SUCCESS);
