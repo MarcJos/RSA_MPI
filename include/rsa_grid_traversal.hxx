@@ -78,6 +78,15 @@ public:
     //! @brief : getter 
     const vec_d<DIM>& get_cell_length() const { return m_cell_length; }
 
+
+    // TODO For Zoltan
+    template<TypeCell typeCell>
+    const std::vector<uint64_t>& get_traversal()
+   {
+     if constexpr (typeCell == TypeCell::Real) return m_real_traversal;
+     if constexpr (typeCell == TypeCell::Ghost) return m_ghost_traversal;
+   }
+
 protected:
     //! @brief  apply the Lambda for each cell index of desired type
     //! @tparam function : function depending on the index, to be applied
