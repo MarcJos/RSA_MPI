@@ -5,6 +5,7 @@
 #include <mpi.h>
 #include <cassert>
 #include <iostream>
+#include <cstdint>
 
 namespace rsa_mpi {
 
