@@ -9,7 +9,7 @@ namespace rsa_paraview {
 
 static int step = 0;
 
-inline void write_pvtp(std::string basedir, std::string basename, size_t number_of_files) {
+void write_pvtp(std::string basedir, std::string basename, size_t number_of_files) {
 	std::string name = basedir + "/" + basename + ".pvtp";
 	std::ofstream outFile(name);
 	if (!outFile) {
@@ -34,7 +34,7 @@ inline void write_pvtp(std::string basedir, std::string basename, size_t number_
 	outFile << " </VTKFile>" << std::endl;
 }
 
-inline void write_vtp(std::string name, size_t size,
+void write_vtp(std::string name, size_t size,
 	std::stringstream& buff_r, std::stringstream& buff_id, std::stringstream& buff_tag,
 	std::stringstream& buff_radius) {
 	name = name + ".vtp";
