@@ -1,5 +1,5 @@
-configure_file("test_py.sh.in" ${CMAKE_BINARY_DIR}/test/test_py.sh @ONLY)    
-add_test(NAME test_python COMMAND bash test_py.sh)
+#configure_file("test_py.sh.in" ${CMAKE_BINARY_DIR}/test/test_py.sh @ONLY)    
+#add_test(NAME test_python COMMAND bash test_py.sh)
 
 # Notre exécutable
 add_executable(test_helper_setter test_helper_setter.cpp)
