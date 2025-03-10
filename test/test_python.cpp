@@ -12,9 +12,9 @@ int main(int argc, char** argv) {
         Point<DIM> l = { 0., 0., 0. };
         Point<DIM> L = { 3.5, 3.5, 3.5 };
         vector<tuple<double, double, int>> desired_radius_volumeFraction_phase{};
-        desired_radius_volumeFraction_phase.push_back({ 0.05, 0.25, 0 });
-        //desired_radius_volumeFraction_phase.push_back({ 0.025, 1, 0 });
-        double rad_max = 0.05;
+        //desired_radius_volumeFraction_phase.push_back({ 0.05, 0.25, 0 });
+        desired_radius_volumeFraction_phase.push_back({ 0.1, 1, 0 });
+        double rad_max = 0.1;//0.05;
         int seed = 0;
         double distance_min = 0.;
         int nb_shots_single_draw = 6000;
