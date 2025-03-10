@@ -19,7 +19,8 @@ int main(int argc, char** argv) {
     // domain is [l_inf[0], l_sup[0]] x ... x [l_inf[DIM-1], l_sup[DIM-1]]
 
     vector<tuple<double, double, int>>
-        desired_radius_volumeFraction_phase = { {0.05, 0.25, 0}, {0.025, 1., 0} };
+        desired_radius_volumeFraction_phase = { {0.1, 0.25, 0}, {0.05, 1., 0} };
+       // desired_radius_volumeFraction_phase = { {0.05, 0.25, 0}, {0.025, 1., 0} };
     // volume fraction {{radius_0, volume fraction_0, phase_id_0}, ...}
 
     double rad_max = 0.;
