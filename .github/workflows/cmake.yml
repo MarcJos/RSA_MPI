@@ -39,7 +39,7 @@ jobs:
 
     - name: Test
       working-directory: ${{github.workspace}}/build
-      run: ctest -C --rerun-failed --output-on-failure ${{env.BUILD_TYPE}}
+      run: ctest -V -C --rerun-failed --output-on-failure ${{env.BUILD_TYPE}}
 
     - name: Generate a code coverage report
       uses: threeal/gcovr-action@v1.0.0
