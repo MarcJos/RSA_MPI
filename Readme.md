@@ -29,6 +29,6 @@ This software provides an HPC implementation provably **equivalent** to the foll
 # Miscellaneous
 
 - For the license, see the file LICENSE.
-- Please kindly report bugs and issues through the gitlab interface.
+- Please kindly report bugs and issues through the gitlab interface. 
 - If you use this software, please consider citing "Parallel and bias-free RSA algorithm for~maximal Poisson-sphere sampling, Josien & Prat (in preparation)".
 
