@@ -43,23 +43,21 @@ Installation with Cmake
 Installation with Spack
 =======================
 
-.. warning::
-
-  These commands should be done in the root directory.
-
 Add repository that contains the spack package.
 
 .. code-block:: bash
 
-   spack repo add spack_repo
+   git clone https://github.com/Collab4exaNBody/spack-repos.git
+   spack repo add spack-repos
 
 .. code-block:: bash
 
+   spack external find openmpi
    spack install rsampi
 
 The executable can be appealed by ``rsa`` after writing:
 
 .. code-block:: bash
 
-   export rsa=$(spack location -i rsampi)/bin/rsa
+   export rsa=`spack location -i rsampi`/bin/rsa
 
