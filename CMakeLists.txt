@@ -43,6 +43,8 @@ add_subdirectory(test)
 
 add_subdirectory(scripts)
 
+add_subdirectory(prototype)
+
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
 	DESTINATION include
 )
