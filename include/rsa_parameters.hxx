@@ -56,15 +56,15 @@ struct rsa_parameters {
         okay = false;
       }
 
-      if (l_min.size() != DIM) { okay = false; std::cout << "Domain inf is not defined correctly, DIM= " << l_min.size() << " instead of " << DIM << "." << std::endl; }
-      if (l_max.size() != DIM) { okay = false; std::cout << "Domain inf is not defined correctly, DIM= " << l_min.size() << " instead of " << DIM << "." << std::endl; }
+      if (int(l_min.size()) != DIM) { okay = false; std::cout << "Domain inf is not defined correctly, DIM= " << l_min.size() << " instead of " << DIM << "." << std::endl; }
+      if (int(l_max.size()) != DIM) { okay = false; std::cout << "Domain inf is not defined correctly, DIM= " << l_min.size() << " instead of " << DIM << "." << std::endl; }
 
       for (int d = 0; d < DIM; d++) {
         if (l_min[d] >= l_max[d]) {
           okay = false; std::cout << "The domain simulation is not correctly defined, for DIM= " << d << " , inf >= max." << std::endl;
         }
       }
-      if (!okay) std::abort;
+      if (!okay) std::abort();
     }
 
   };
@@ -96,7 +96,7 @@ inline void help()
  *
  * Returns: An rsa_parameters struct with the parsed parameters.
  */
-rsa_parameters read_input(int argc, char** argv) {
+inline rsa_parameters read_input(int argc, char** argv) {
   if (argc < 2) {
     std::cout << "Wrong number of arguments" << std::endl;
     help();
@@ -111,7 +111,6 @@ rsa_parameters read_input(int argc, char** argv) {
 
   rsa_parameters param;
   int i = 1;
-  int dim_l = 0;
 
   while (i < argc) {
     std::string key = argv[i];

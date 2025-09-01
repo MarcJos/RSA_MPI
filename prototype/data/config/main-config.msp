@@ -1,0 +1,14 @@
+input_data: nop
+header: nop
+dimension:
+  - message: { mesg: "Please define the dimension in dimension. dimension: dim_3" }
+
+print_parameters:
+  - rsa_mpi_display_domain
+
+simulation:
+  - header
+  - global
+  - dimension
+  - input_data
+  - print_parameters

@@ -34,13 +34,13 @@ private:
 	std::vector<Buffer> m_recv; ///< list of buffers used to receive particles
 	double m_rad; ///< stores the a_rad given in constructor
 
-	//! @brief : default constructor is private, do not use it.
-	rsa_domain() {}
 	//! @brief check if the domain is sufficiently large to have cells large enough
 	//! @param a_rad : maximal radius of a sphere
 	void check_sufficiently_large(double a_rad);
 
 public:
+	//! @brief : default constructor was private and now public, but please do not use it.
+	rsa_domain() {}
 
 	//! @brief constructor for a periodic domain [l_min[0], l_max[0]] x ... [l_min[D-1], l_max[D-1]] in \R^D (D=DIM)
 	//! The domain is scattered over the mpi processes.

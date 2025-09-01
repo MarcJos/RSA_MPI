@@ -51,7 +51,7 @@ endif()
 
 set( CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS}" "--expt-relaxed-constexpr" )
 
-set(RSA_MPI_INCLUDE_DIRS ${ONIKA_INCLUDE_DIRS} ${rsa_mpi_DIR}/include)
+set(RSA_MPI_INCLUDE_DIRS ${ONIKA_INCLUDE_DIRS} ${rsa_mpi_DIR}/include ${rsa_mpi_DIR}/prototype/include)
 
 add_subdirectory(src)
 
@@ -62,6 +62,7 @@ target_include_directories(rsa_mpi PUBLIC ${RSA_MPI_INCLUDE_DIRS})
 target_link_directories(rsa_mpi PUBLIC ${ONIKA_LIBRARY_DIRS}) #${exaDEM_LIBRARY_DIRS})
 target_link_libraries(rsa_mpi PUBLIC ${ONIKA_LIBRARIES})
 
+set(ONIKA_PLUGIN_PATH "${CMAKE_CURRENT_BINARY_DIR}/plugins")
 string(REPLACE ";" ":" ONIKA_PLUGIN_PATH "${ONIKA_PLUGIN_PATH}")
 
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/setup-env.sh
