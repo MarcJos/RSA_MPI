@@ -53,6 +53,8 @@ set( CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS}" "--expt-relaxed-constexpr" )
 
 set(RSA_MPI_INCLUDE_DIRS ${ONIKA_INCLUDE_DIRS} ${rsa_mpi_DIR}/include)
 
+add_subdirectory(src)
+
 add_executable(rsa_mpi rsa_mpi.cpp)
 target_compile_options(rsa_mpi PUBLIC ${ONIKA_COMPILE_OPTIONS})
 target_compile_definitions(rsa_mpi PUBLIC ${ONIKA_COMPILE_DEFINITIONS})

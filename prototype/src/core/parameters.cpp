@@ -1,19 +1,29 @@
-#pragma once
+#include <vector>
+#include <array>
+#include <onika/scg/operator.h>
+#include <onika/scg/operator_slot.h>
+#include <onika/scg/operator_factory.h>
+#include <onika/log.h>
+#include <onika/parallel/parallel_execution_context.h>
 
-#include<rsa_parameters.hxx>
+#include <rsa_decoration.hxx>
+#include <rsa_parameters.hxx>
 
 namespace rsa_mpi
 {
+  using namespace onika;
+  using namespace onika::scg;
+
 	template <int DIM> class RSAMPIParameters : public OperatorNode
 	{
     ADD_SLOT(rsa_parameters, RSAParameters, OUTPUT, DocString{""});
-    ADD_SLOT(std::array<double, DIM>, inf, INPUT, REQUIRED, DocString{"Minimum coordinates of the system. Example inf: [0, ..., 0]"});
-    ADD_SLOT(std::array<double, DIM>, sup, INPUT, REQUIRED, DocString{"aximum coordinates of the system, example sup: [0, ..., 0]"});
+    ADD_SLOT(std::vector<double>, inf, INPUT, REQUIRED, DocString{"Minimum coordinates of the system. Example inf: [0, ..., 0]"});
+    ADD_SLOT(std::vector<double>, sup, INPUT, REQUIRED, DocString{"aximum coordinates of the system, example sup: [0, ..., 0]"});
     ADD_SLOT(double, radius, INPUT, REQUIRED, DocString{"Radius of particles"});
-    ADD_SLOT(bool, paraview, INTPUT, false, DocString{" Flag for Paraview visualization"});
+    ADD_SLOT(bool, paraview, INPUT, false, DocString{" Flag for Paraview visualization"});
     ADD_SLOT(int, size, INPUT, 6000, DocString{"TO DO RENAME"});
     ADD_SLOT(int, n_draw, INPUT, 10, DocString{"Number of draws"});
-    ADD_SLOT(int, seed, INTPUT, 0, DocString{"Seed for random number generation"}); 
+    ADD_SLOT(int, seed, INPUT, 0, DocString{"Seed for random number generation"}); 
 
 		inline std::string documentation() const override final
 		{
@@ -22,7 +32,7 @@ namespace rsa_mpi
 
 		inline void execute() override final
 		{
-      RSAParameters& params = *RSAParameters;
+      rsa_parameters& params = *RSAParameters;
       params.DIM = DIM;
       params.radius = *radius;
       params.l_min = *inf;
@@ -32,9 +42,9 @@ namespace rsa_mpi
       params.size = *size;
       params.paraview = *paraview;      
       params.minimal_requirement();
-      params.Display();
+      params.display();
 		}
-	}
+	};
 
   ONIKA_AUTORUN_INIT(parameters) 
   { 
