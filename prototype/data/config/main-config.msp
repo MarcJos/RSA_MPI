@@ -5,10 +5,15 @@ dimension:
 
 print_parameters:
   - rsa_mpi_display_domain
+  - rsa_mpi_display_grid
+
+initialize_algo:
+  - rsa_mpi_grid
 
 simulation:
   - header
   - global
   - dimension
   - input_data
+  - initialize_algo
   - print_parameters

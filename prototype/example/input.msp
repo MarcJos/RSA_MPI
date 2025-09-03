@@ -1,0 +1,15 @@
+dimension:
+  - dim_3
+
+input_data:
+  - rsa_mpi_domain:
+     inf: [0,0,0]
+     sup: [1,1,1]
+
+global:
+  radius: 0.05
+  ghost_layer: 1
+  seed: 0
+  size: 6000
+  n_draw: 10 
+  paraview: true
