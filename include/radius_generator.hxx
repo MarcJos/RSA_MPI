@@ -43,7 +43,7 @@ private:
 //! (defaulted as RandomRadiusGenerator, but might be something else)
 //! @tparam DIM : dimension of the space
 template<int DIM, class RANDOM_RADIUS_GENERATOR = RandomRadiusGenerator>
-class RadiusGenerator {
+struct RadiusGenerator {
     //! @brief class used for generating successively radii of spheres to be placed
     //! @warning: the internal representation of radii takes into account a parameter called exclusionDistance, \see RadiusGenerator::setTabRadii
 public:

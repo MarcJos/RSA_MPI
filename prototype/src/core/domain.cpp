@@ -8,13 +8,10 @@
 
 #include <rsa_data_storage.hxx>
 #include <rsa_random.hxx>
-
 #include <rsa_decoration.hxx>
 #include <rsa_domain.hxx>
 #include <RSAMPI/RSADim.hpp>
 #include <RSAMPI/make_variant_operator.hpp>
-
-#include <array>
 
 namespace rsa_mpi
 {
@@ -45,7 +42,6 @@ namespace rsa_mpi
 			domain = rsa_domain<DIM>(*inf, *sup, *ghost_layer, *radius);
 		}
 	};
-
 
 	template<int DIM> using RSAMPIDomainTmpl = RSAMPIDomain<DIM>;
 

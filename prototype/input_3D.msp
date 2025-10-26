@@ -5,6 +5,8 @@ input_data:
   - rsa_mpi_domain:
      inf: [0,0,0]
      sup: [1,1,1]
+  - uniform_radius_generator:
+     radius: 0.1
 
 global:
   radius: 0.05
