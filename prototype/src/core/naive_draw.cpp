@@ -40,7 +40,7 @@ namespace rsa_mpi
  
       YAML example:
 
-        - draw
+        - naive_draw
 
       )EOF";
 		}
