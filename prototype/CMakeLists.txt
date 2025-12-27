@@ -21,7 +21,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 find_package(OpenMP REQUIRED)
 find_package(onika REQUIRED)
 
-set(rsa_mpi_DIR $ENV{rsa_mpi_DIR})
+set(rsa_mpi_DIR ${CMAKE_SOURCE_DIR})
 message(STATUS "${rsa_mpi_DIR}/include")
 
 ## LATER

@@ -5,12 +5,28 @@
 //! \brief
 #pragma once
 
-#include<median_of_medians.hxx>
+#include <median_of_medians.hxx>
 #include <chrono>
 #include <ctime>
 #include <cmath>
 
 namespace algorithm {
+
+template<int DIM>
+std::vector<law::uniform<double>> auxi::create_random_law(const rsa_domain<DIM>& a_domain,
+	std::mt19937& random_generator) {
+	std::vector<law::uniform<double>> ulaw{};
+
+	const auto inf = a_domain.get_inf();
+	const auto sup = a_domain.get_sup();
+
+	// law are defined for every dimensions
+	for (int i = 0; i < DIM; i++) {
+		ulaw.emplace_back(law::uniform<double>(inf[i], sup[i], random_generator)); // fill law, using boundaries
+	}
+
+	return ulaw;
+}
 
 template<int DIM>
 rsa_algo<DIM>::rsa_algo(rsa_domain<DIM>& a_domain, RadiusGenerator<DIM>& a_radius_generator,
@@ -310,22 +326,6 @@ arr_vec_double<DIM> auxi::generate_sphere_positions(FuncLaw* a_func_law, int a_s
 		}
 	}
 	return pos;
-}
-
-template<int DIM>
-std::vector<law::uniform<double>> auxi::create_random_law(const rsa_domain<DIM>& a_domain,
-	std::mt19937& random_generator) {
-	std::vector<law::uniform<double>> ulaw{};
-
-	const auto inf = a_domain.get_inf();
-	const auto sup = a_domain.get_sup();
-
-	// law are defined for every dimensions
-	for (int i = 0; i < DIM; i++) {
-		ulaw.emplace_back(law::uniform<double>(inf[i], sup[i], random_generator)); // fill law, using boundaries
-	}
-
-	return ulaw;
 }
 
 template<int DIM>
