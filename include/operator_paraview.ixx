@@ -129,6 +129,52 @@ void paraview(const rsa_domain<DIM>& a_domain, std::string a_name) {
 }
 
 template<int DIM>
+void paraview(const std::string& a_directory, const std::string& a_basename, const rsa_grid<DIM>& a_grid) {
+	namespace fs = std::filesystem;
+	// mpi stuff
+	int rank, size;
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+	// per-rank .vtp pieces live in a subdirectory named after the basename,
+	// referenced by the .pvtp file written directly in a_directory
+	std::string piece_dir = a_directory + "/" + a_basename;
+	std::string filename = piece_dir + "/" + a_basename + "_" + std::to_string(rank);
+
+	if (rank == 0) {
+		fs::create_directories(piece_dir);
+	}
+	MPI_Barrier(MPI_COMM_WORLD);
+
+	size_t count(0);
+	std::stringstream buff_r; // store vertices
+	std::stringstream buff_id; // store faces
+	std::stringstream buff_tag; // store face offsets
+	std::stringstream buff_radius; // store face offsets
+
+	// lambda function to fill stringstream
+	auto fill_buffers = [&count, &buff_r, &buff_id, &buff_tag, &buff_radius](const size_t cell_id, auto& cell_data) {
+		size_t n_spheres = cell_data.size();
+		for (size_t s = 0; s < n_spheres; s++) {
+			auto r = cell_data.get_center(s);
+			buff_r << r[0] << " " << r[1] << " " << r[2] << " ";
+			buff_id << cell_data.get_phase(s) << " ";
+			buff_tag << int(cell_data.get_tag(s)) << " ";
+			buff_radius << cell_data.get_rad(s) << " ";
+		}
+		count += n_spheres;
+		};
+
+	// false -> no OpenMP
+	a_grid.template apply_on_cells<TypeCell::Real, false>(fill_buffers);
+
+	if (rank == 0) {
+		write_pvtp(a_directory, a_basename, size);
+	}
+	write_vtp(filename, count, buff_r, buff_id, buff_tag, buff_radius);
+}
+
+template<int DIM>
 void debug_paraview(std::string a_name, rsa_data_storage<DIM>& a_data) {
 	using Buffer = buffer_for_spheres<DIM>;
 	// mpi stuff

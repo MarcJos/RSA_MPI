@@ -33,6 +33,14 @@ void paraview(std::string a_name, const rsa_grid<DIM>& a_grid);
 //! @param a_domain : The domain containing the information to be exported.
 template<int DIM>
 void paraview(const rsa_domain<DIM>& a_domain, std::string a_name = "ParaviewOutput");
+
+//! @brief Exports grid data to Paraview files, with an explicit output directory and base name
+//! (e.g. to write "<a_directory>/<a_basename>.pvtp", meant for a specific iteration or a final dump).
+//! @param a_directory : output directory, created (recursively) if it doesn't already exist.
+//! @param a_basename : base name shared by the .pvtp file and its per-rank .vtp pieces.
+//! @param a_grid : The grid of cells containing the information to be exported.
+template<int DIM>
+void paraview(const std::string& a_directory, const std::string& a_basename, const rsa_grid<DIM>& a_grid);
 } // namespace rsa_paraview
 
 #include <operator_paraview.ixx>

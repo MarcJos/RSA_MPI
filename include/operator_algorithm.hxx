@@ -146,6 +146,27 @@ int64_t generate_spheres(rsa_grid<DIM>& a_grid,
 	uint64_t nb_spheres_total_max,
 	bool may_outreach_nb_spheres);
 
+//! @brief Adds already generated candidate spheres to the grid, resolving conflicts against
+//! the currently validated spheres (and neighboring MPI processes, through ghosts).
+//! @note : this step is agnostic of how the candidates were produced, so it is shared by
+//! every drawing strategy (naive, voxel, ...) once they've produced their own candidates
+//! (@see generate_candidates). @see generate_spheres, which is generate_candidates + this.
+//! @return : Nb of newly added (local) spheres
+//! @param a_grid : The main grid of cells (validated spheres).
+//! @param a_recv : The buffers storing received data from neighboring processes.
+//! @param a_send : The buffers storing data to be sent to neighboring processes.
+//! @param a_ghost_areas : The ghost areas used to store ghost.
+//! @param a_candidates : The candidate spheres to add.
+//! @param nb_spheres_total_max : desired final number of spheres (for this radius/phase).
+//! @param may_outreach_nb_spheres : true if the number of candidates may exceed nb_spheres_total_max.
+template<int DIM>
+int64_t commit_candidates(rsa_grid<DIM>& a_grid,
+	Buffers<DIM>& a_recv, Buffers<DIM>& a_send,
+	GhostAreas<DIM>& a_ghost_areas,
+	rsa_data_storage<DIM>& a_candidates,
+	uint64_t nb_spheres_total_max,
+	bool may_outreach_nb_spheres);
+
 //! @brief Generate candidate spheres
 //! @tparam CenterGenerator
 //! @tparam DIM

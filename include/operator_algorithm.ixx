@@ -544,14 +544,24 @@ int64_t generate_spheres(rsa_grid<DIM>& a_grid,
 	bool may_outreach_nb_spheres) {
 	rsa_data_storage<DIM> spheres = generate_candidates<DIM>(
 		a_center_generator, a_radius_generator, a_priority_generator, a_size);
+	return commit_candidates<DIM>(a_grid, a_recv, a_send, a_ghost_areas, spheres,
+		nb_spheres_total_max, may_outreach_nb_spheres);
+}
 
+template<int DIM>
+int64_t commit_candidates(rsa_grid<DIM>& a_grid,
+	Buffers<DIM>& a_recv, Buffers<DIM>& a_send,
+	GhostAreas<DIM>& a_ghost_areas,
+	rsa_data_storage<DIM>& a_candidates,
+	uint64_t nb_spheres_total_max,
+	bool may_outreach_nb_spheres) {
 	int64_t local_nb_new_spheres = 0;
 
 	//
-	build_grid(a_grid, spheres, TypeTag::Undecided);
+	build_grid(a_grid, a_candidates, TypeTag::Undecided);
 
 	// identify the cells containing spheres with conflicts
-	vector<uint64_t> cells_with_conflicts = auxi::compute_conflict_cells<DIM>(spheres, a_grid);
+	vector<uint64_t> cells_with_conflicts = auxi::compute_conflict_cells<DIM>(a_candidates, a_grid);
 
 	while (add_to_sample(a_grid,
 		a_recv, a_send,

@@ -20,7 +20,8 @@ naive_algorithm:
   name: naive_algorithm
   condition: continue_loop
   body:
-    - naive_draw
+    - naive_candidates
+    - commit_candidates
     - paraview_details_block
     - naive_draw_continue
 
