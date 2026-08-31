@@ -1,0 +1,12 @@
+# Paraview I/O blocks, conditionally gated by the paraview_details / paraview_final
+# global flags (see rsa_mpi_default.msp). Referenced from main-config.msp.
+
+paraview_details_block:
+  condition: paraview_details
+  body:
+    - rsa_mpi_paraview
+
+paraview_final_block:
+  condition: paraview_final
+  body:
+    - rsa_mpi_paraview_final

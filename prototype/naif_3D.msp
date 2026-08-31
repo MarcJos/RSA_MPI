@@ -13,4 +13,5 @@ global:
   seed: 0
   size: 6000
   n_draw: 10
-  paraview: true
+  paraview_details: true
+  paraview_final: true

@@ -1,0 +1,6 @@
+
+global:
+  output_dir: RSAOutPutDir
+  paraview_details: true
+  paraview_final: true
+  continue_loop: true

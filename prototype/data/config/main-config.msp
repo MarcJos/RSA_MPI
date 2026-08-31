@@ -1,10 +1,9 @@
+includes:
+  - rsa_mpi_default.msp
+  - rsa_mpi_io.msp
+
 input_data: nop
 header: nop
-
-# internal default, needed so that the naive_algorithm loop condition has a
-# value before its first iteration; overridden in place after each draw
-global:
-  continue_loop: true
 
 dimension:
   - message: { mesg: "Please define the dimension in dimension. dimension: dim_3" }
@@ -22,11 +21,15 @@ naive_algorithm:
   condition: continue_loop
   body:
     - naive_draw
+    - paraview_details_block
     - naive_draw_continue
 
 # overridable hook: swap this to plug in an alternative packing method later on
 algorithm:
   - naive_algorithm
+
+simulation_epilog:
+  - paraview_final_block
 
 simulation:
   - header
@@ -36,3 +39,4 @@ simulation:
   - initialize_algo
   - algorithm
   - print_parameters
+  - simulation_epilog
