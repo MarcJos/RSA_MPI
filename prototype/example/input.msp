@@ -11,9 +11,5 @@ input_data:
      sup: [1,1,1]
 
 global:
-  ghost_layer: 1
-  seed: 0
-  size: 6000
-  n_draw: 10
   paraview_details: true
   paraview_final: true

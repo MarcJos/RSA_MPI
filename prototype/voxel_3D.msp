@@ -14,9 +14,6 @@ algorithm:
   - voxel_algorithm
 
 global:
-  ghost_layer: 1
-  seed: 0
-  size: 6000
   paraview_details: true
   paraview_final: true
   output_dir: "AlgoVoxel3DExemple"
