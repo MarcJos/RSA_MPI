@@ -31,6 +31,7 @@ class RSAMPINaiveCandidates : public OperatorNode {
   ADD_SLOT(sac_de_billes::RadiusGenerator<DIM>, RSARadiusGenerator, INPUT, REQUIRED, DocString{"Radius of particles"});
 
   ADD_SLOT(rsa_data_storage<DIM>, candidates, OUTPUT, DocString{"Candidate spheres drawn for this iteration"});
+  ADD_SLOT(int, shots, OUTPUT, DocString{"Number of shots drawn (locally) that produced these candidates"});
 
   ADD_SLOT(RandomGeneratorState, random_generator_state, PRIVATE);
 
@@ -73,7 +74,8 @@ actually adds them to the grid (shared by every drawing strategy).
     const auto& radius_gen = *RSARadiusGenerator;
     auto radius_generator = [&radius_gen, &random_generator](int size) { return radius_gen(size, random_generator); };
 
-    *candidates = algorithm::generate_candidates<DIM>(center_generator, radius_generator, priority_generator, *size);
+    *shots = *size;
+    *candidates = algorithm::generate_candidates<DIM>(center_generator, radius_generator, priority_generator, *shots);
   }
 };
 

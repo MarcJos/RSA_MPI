@@ -7,11 +7,14 @@ input_data:
      sup: [1,1,1]
   - uniform_radius_generator
 
+algorithm:
+  - voxel_algorithm
+
 global:
   radius: 0.05
   ghost_layer: 1
   seed: 0
   size: 6000
-  n_draw: 10
   paraview_details: true
   paraview_final: true
+  output_dir: "AlgoVoxel3DExemple"

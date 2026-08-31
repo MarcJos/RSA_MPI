@@ -14,6 +14,7 @@ print_parameters:
 
 initialize_algo:
   - rsa_mpi_grid
+  - voxel_list_init
 
 naive_algorithm:
   loop: true
@@ -25,7 +26,18 @@ naive_algorithm:
     - paraview_details_block
     - naive_draw_continue
 
-# overridable hook: swap this to plug in an alternative packing method later on
+voxel_algorithm:
+  loop: true
+  name: voxel_algorithm
+  condition: continue_loop
+  body:
+    - voxel_candidates
+    - commit_candidates
+    - voxel_update
+    - paraview_details_block
+    - voxel_algorithm_continue
+
+# overridable hook: swap this (e.g. to [voxel_algorithm]) to plug in an alternative packing method
 algorithm:
   - naive_algorithm
 

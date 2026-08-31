@@ -207,35 +207,52 @@ template<int DIM>
 template<bool plog>
 void  rsa_algo<DIM>::update_covered_voxels(voxel_list::list_of_voxels<DIM>& uncovered_voxels,
 	double miss_rate) {
-	if (miss_rate > desired_miss_rate()) {
-		uncovered_voxels.remove_covered(this->get_grid(), this->m_radius_generator.get_min_radius());
-		uncovered_voxels.subdivide_uncovered(this->get_grid(), this->m_radius_generator.get_min_radius());
+	auxi::update_covered_voxels<DIM>(uncovered_voxels, this->get_grid(),
+		this->m_radius_generator.get_min_radius(), miss_rate, desired_miss_rate(), plog);
+}
+
+template<int DIM>
+int rsa_algo<DIM>::compute_nb_shots_voxel(std::mt19937& random_generator,
+	double intensity, double maximum_intensity) {
+	return auxi::compute_nb_shots_voxel(random_generator, intensity, maximum_intensity, m_nbshots_singledraw);
+}
+
+template<int DIM>
+double rsa_algo<DIM>::compute_intensity_poisson(int a_number_of_voxels) {
+	return auxi::compute_intensity_poisson(a_number_of_voxels);
+}
+
+inline double auxi::compute_intensity_poisson(int64_t a_number_of_voxels) {
+	constexpr double intensity_factor = 0.01; // magical constant
+	return intensity_factor * double(a_number_of_voxels);
+}
+
+inline int auxi::compute_nb_shots_voxel(std::mt19937& random_generator,
+	double intensity, double maximum_intensity, int a_max_shots_per_draw) {
+	double multiplicator_intensity = a_max_shots_per_draw / maximum_intensity;
+	if (multiplicator_intensity > 1) {
+		multiplicator_intensity = 1.;
+	}
+	std::poisson_distribution<> poisson_distrib(multiplicator_intensity * intensity);
+	int nb_shots = poisson_distrib(random_generator);
+	return nb_shots;
+}
+
+template<int DIM>
+void auxi::update_covered_voxels(voxel_list::list_of_voxels<DIM>& uncovered_voxels, const rsa_grid<DIM>& a_grid,
+	double a_min_radius, double miss_rate, double a_desired_miss_rate, bool plog) {
+	if (miss_rate > a_desired_miss_rate) {
+		uncovered_voxels.remove_covered(a_grid, a_min_radius);
+		uncovered_voxels.subdivide_uncovered(a_grid, a_min_radius);
 	}
 
-	if constexpr (plog) {
+	if (plog) {
 		int64_t nb_voxels = uncovered_voxels.size();
 		int64_t max_nb_voxels = rsa_mpi::compute_mpi_max(nb_voxels);
 		int64_t total_nb_voxels = rsa_mpi::compute_mpi_sum(nb_voxels);
 		rsa_mpi::message("Total nb voxels: " + std::to_string(total_nb_voxels));
 		rsa_mpi::message("Max nb voxels  : " + std::to_string(max_nb_voxels));
 	}
-}
-
-template<int DIM>
-int rsa_algo<DIM>::compute_nb_shots_voxel(std::mt19937& random_generator,
-	double intensity, double maximum_intensity) {
-	double mutliplicator_intensity = m_nbshots_singledraw / maximum_intensity;
-	if (mutliplicator_intensity > 1) {
-		mutliplicator_intensity = 1.;
-	}
-	std::poisson_distribution<> poisson_distrib(mutliplicator_intensity * intensity);
-	int nb_shots = poisson_distrib(random_generator);
-	return nb_shots;
-}
-
-template<int DIM>
-double rsa_algo<DIM>::compute_intensity_poisson(int a_number_of_voxels) {
-	return m_intensity_factor * a_number_of_voxels;
 }
 
 template<int DIM>

@@ -37,11 +37,13 @@ private:
     //! @brief : common size of each cell
     Point<DIM> m_voxel_lengths;
     //! coordinates of the origin of the domain
-    const Point<DIM> m_origin;
+    //! @note: not const, so that list_of_voxels stays copy/move-assignable (needed for onika)
+    Point<DIM> m_origin;
     //! corners of voxels (the origin is at 0)
     array<Point<DIM>, sac_de_billes::auxi_function::puissance<DIM>(2)> m_corners_voxel;
 
 public:
+    list_of_voxels() : m_voxel_coordinates{}, m_voxel_lengths{}, m_origin{}, m_corners_voxel{} {} // A default constructor is required for onika
     //! @brief constructor
     //! @param a_origin : origin of the domain
     //! @param a_domain_length : dimension of the domain

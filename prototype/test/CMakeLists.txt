@@ -36,3 +36,13 @@ add_test(
 set_tests_properties(prototype_naif_3D PROPERTIES
   TIMEOUT 120
   PASS_REGULAR_EXPRESSION "Number of Spheres")
+
+add_test(
+  NAME prototype_voxel_3D
+  COMMAND bash ${CMAKE_CURRENT_BINARY_DIR}/run_msp_test.sh ${CMAKE_CURRENT_SOURCE_DIR}/../voxel_3D.msp)
+
+# the voxel RSA loop only stops once fully packed (or radii exhausted) -
+# same rationale as prototype_naif_3D above.
+set_tests_properties(prototype_voxel_3D PROPERTIES
+  TIMEOUT 120
+  PASS_REGULAR_EXPRESSION "Number of Spheres")

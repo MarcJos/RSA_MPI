@@ -24,8 +24,7 @@ class RSAMPICommitCandidates : public OperatorNode {
   ADD_SLOT(rsa_domain<DIM>, RSADomain, INPUT, REQUIRED, DocString{"RSAMPI Domain"});
   ADD_SLOT(rsa_grid<DIM>, RSAGrid, INPUT, DocString{"Grid that contains particles"});
   ADD_SLOT(rsa_data_storage<DIM>, candidates, INPUT, REQUIRED, DocString{"Candidate spheres to commit"});
-  ADD_SLOT(int, size, INPUT, REQUIRED,
-           DocString{"Number of shots drawn per MPI process that produced these candidates"});
+  ADD_SLOT(int, shots, INPUT, REQUIRED, DocString{"Number of shots drawn (locally) that produced these candidates"});
   ADD_SLOT(sac_de_billes::RadiusGenerator<DIM>, RSARadiusGenerator, INPUT_OUTPUT, DocString{"Radius of particles"});
 
   ADD_SLOT(uint64_t, nb_added_spheres, OUTPUT, DocString{"Number of newly committed spheres"});
@@ -54,7 +53,9 @@ generator with the spheres that got placed.
 
     // recomputed at each draw, since the radius generator state evolves as spheres get placed
     const uint64_t nb_spheres_total_max = RSARadiusGenerator->get_current_number();
-    const int64_t total_nb_shots = int64_t(*size) * rsa_mpi::get_number_of_mpi_processes();
+    // a real reduction (not a plain multiplication by the process count), since candidate-producing
+    // strategies such as voxel_candidates may draw a different number of shots on each MPI process
+    const int64_t total_nb_shots = rsa_mpi::compute_mpi_sum(int64_t(*shots));
     const bool may_outreach_nb_spheres = (total_nb_shots >= int64_t(nb_spheres_total_max));
 
     *nb_added_spheres = algorithm::commit_candidates<DIM>(grid, domain.get_recv_buffers(), domain.get_send_buffers(),
