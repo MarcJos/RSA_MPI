@@ -11,8 +11,7 @@ input_data:
      inf: [0,0,0]
      sup: [1,1,1]
 
-algorithm:
-  - voxel_algorithm
+algorithm: voxel_algorithm
 
 global:
   ghost_layer: 1
