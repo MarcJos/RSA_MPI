@@ -10,6 +10,12 @@ print_parameters:
 initialize_algo:
   - rsa_mpi_grid
 
+
+naive_algorith:
+  
+
+algorithm: nop
+
 simulation:
   - header
   - global
