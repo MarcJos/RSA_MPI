@@ -2,10 +2,11 @@ dimension:
   - dim_3
 
 input_data:
-  - uniform_radius_generator:
+  - multi_radius_generator:
      inf: [0,0,0]
      sup: [1,1,1]
-     radius: 0.05
+     radii: [0.1, 0.05, 0.025]
+     volume_fractions: [0.15, 0.15, 1.0]
   - rsa_mpi_domain:
      inf: [0,0,0]
      sup: [1,1,1]
@@ -17,6 +18,7 @@ global:
   ghost_layer: 1
   seed: 0
   size: 6000
+  n_draw: 10
   paraview_details: true
   paraview_final: true
-  output_dir: "AlgoVoxel3DExemple"
+  output_dir: "MutiRadiusExample"

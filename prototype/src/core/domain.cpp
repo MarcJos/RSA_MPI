@@ -23,7 +23,9 @@ class RSAMPIDomain : public OperatorNode {
   ADD_SLOT(RSADim<DIM>, rsa_mpi_dim, INPUT, REQUIRED, DocString{"Used to define the spatial dimension."});
   ADD_SLOT(rsa_domain<DIM>, RSADomain, OUTPUT, DocString{""});
   ADD_SLOT(int, ghost_layer, INPUT, 1, DocString{""});
-  ADD_SLOT(double, radius, INPUT, REQUIRED, DocString{"Radius of particles"});
+  ADD_SLOT(double, cell_size, INPUT, REQUIRED,
+           DocString{"Implicit cell size for domain decomposition and the grid (must be >= the largest sphere "
+                     "radius used); typically deduced from a radius generator's own cell_size output"});
   ADD_SLOT(VecND, inf, INPUT, REQUIRED, DocString{"Minimum coordinates of the system. Example inf: [0, ..., 0]"});
   ADD_SLOT(VecND, sup, INPUT, REQUIRED, DocString{"Maximum coordinates of the system, example sup: [0, ..., 0]"});
   //		ADD_SLOT(std::array<double, DIM>, inf, INPUT, REQUIRED, DocString{"Minimum coordinates of the system.
@@ -34,7 +36,7 @@ class RSAMPIDomain : public OperatorNode {
 
   inline void execute() override final {
     rsa_domain<DIM>& domain = *RSADomain;
-    domain = rsa_domain<DIM>(*inf, *sup, *ghost_layer, *radius);
+    domain = rsa_domain<DIM>(*inf, *sup, *ghost_layer, *cell_size);
   }
 };
 

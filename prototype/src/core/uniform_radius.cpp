@@ -16,21 +16,30 @@ using namespace onika::scg;
 
 template <int DIM>
 class RSAMPIUniformRadiusGenerator : public OperatorNode {
-  ADD_SLOT(rsa_domain<DIM>, RSADomain, INPUT, REQUIRED, DocString{"RSAMPI Domain"});
+  using VecND = std::array<double, DIM>;
+  // anchors this operator's DIM (no RSADomain/RSADim-typed input would otherwise
+  // pin it down, since this operator is meant to run before rsa_mpi_domain)
+  ADD_SLOT(RSADim<DIM>, rsa_mpi_dim, INPUT, REQUIRED, DocString{"Used to define the spatial dimension."});
+  ADD_SLOT(VecND, inf, INPUT, REQUIRED, DocString{"Minimum coordinates of the system. Example inf: [0, ..., 0]"});
+  ADD_SLOT(VecND, sup, INPUT, REQUIRED, DocString{"Maximum coordinates of the system, example sup: [0, ..., 0]"});
   ADD_SLOT(double, radius, INPUT, REQUIRED, DocString{"Radius of particles"});
   ADD_SLOT(sac_de_billes::RadiusGenerator<DIM>, RSARadiusGenerator, OUTPUT, DocString{"Radius of particles"});
+  ADD_SLOT(double, cell_size, OUTPUT,
+           DocString{"Same as radius; meant to feed rsa_mpi_domain's cell_size, so it stays consistent with "
+                     "the actual sphere radius without duplicating the value"});
 
   inline std::string documentation() const override final { return R"EOF()EOF"; }
 
   inline void execute() override final {
-    rsa_domain<DIM>& domain = *RSADomain;
-    *RSARadiusGenerator = RadiusGenerator<DIM>(std::vector<std::tuple<double, double, int>>{{*radius, 1.0, 0}},
-                                               domain.get_total_volume());
+    const double volume = sac_de_billes::auxi_function::productOf<double>(*sup - *inf);
+    *RSARadiusGenerator =
+        RadiusGenerator<DIM>(std::vector<std::tuple<double, double, int>>{{*radius, 1.0, 0}}, volume);
+    *cell_size = *radius;
 
     onika::lout << " ================================== " << std::endl;
     onika::lout << " Radius Generator Mode = Uniform " << std::endl;
     onika::lout << " Radius = " << *radius << std::endl;
-    onika::lout << " Volume = " << domain.get_total_volume() << std::endl;
+    onika::lout << " Volume = " << volume << std::endl;
     onika::lout << " ================================== " << std::endl;
   }
 };

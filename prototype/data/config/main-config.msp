@@ -23,6 +23,7 @@ naive_algorithm:
   body:
     - naive_candidates
     - commit_candidates
+    - rsa_mpi_iteration_log
     - paraview_details_block
     - naive_draw_continue
 
@@ -34,6 +35,7 @@ voxel_algorithm:
     - voxel_candidates
     - commit_candidates
     - voxel_update
+    - rsa_mpi_iteration_log
     - paraview_details_block
     - voxel_algorithm_continue
 

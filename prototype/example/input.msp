@@ -2,12 +2,15 @@ dimension:
   - dim_3
 
 input_data:
+  - uniform_radius_generator:
+     inf: [0,0,0]
+     sup: [1,1,1]
+     radius: 0.05
   - rsa_mpi_domain:
      inf: [0,0,0]
      sup: [1,1,1]
 
 global:
-  radius: 0.05
   ghost_layer: 1
   seed: 0
   size: 6000
