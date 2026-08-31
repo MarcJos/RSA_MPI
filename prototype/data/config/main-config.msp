@@ -1,5 +1,11 @@
 input_data: nop
 header: nop
+
+# internal default, needed so that the naive_algorithm loop condition has a
+# value before its first iteration; overridden in place after each draw
+global:
+  continue_loop: true
+
 dimension:
   - message: { mesg: "Please define the dimension in dimension. dimension: dim_3" }
 
@@ -10,11 +16,17 @@ print_parameters:
 initialize_algo:
   - rsa_mpi_grid
 
+naive_algorithm:
+  loop: true
+  name: naive_algorithm
+  condition: continue_loop
+  body:
+    - naive_draw
+    - naive_draw_continue
 
-naive_algorith:
-  
-
-algorithm: nop
+# overridable hook: swap this to plug in an alternative packing method later on
+algorithm:
+  - naive_algorithm
 
 simulation:
   - header
@@ -22,4 +34,5 @@ simulation:
   - dimension
   - input_data
   - initialize_algo
+  - algorithm
   - print_parameters

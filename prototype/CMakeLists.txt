@@ -73,3 +73,5 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/setup-env.sh
   "export ONIKA_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/data/config\n"
   "export ONIKA_PLUGIN_PATH=${ONIKA_PLUGIN_PATH} \n")
 
+add_subdirectory(test)
+
