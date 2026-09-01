@@ -8,3 +8,8 @@ global:
   paraview_details: false
   paraview_final: false
   continue_loop: true
+
+configuration:
+  profiling:
+    exectime: false
+    summary: true

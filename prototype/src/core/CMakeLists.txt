@@ -14,6 +14,6 @@
 # kind, either express or implied.  see the license for the
 # specific language governing permissions and limitations
 # under the license.
-#set(rsa_mpi_core_LINK_LIBRARIES exanbCore)
+set(rsa_mpi_core_LINK_LIBRARIES exanbCore)
 set(rsa_mpi_core_INCLUDE_DIRS ${RSA_MPI_INCLUDE_DIRS})
 onika_add_plugin(rsa_mpi_core ${CMAKE_CURRENT_SOURCE_DIR})

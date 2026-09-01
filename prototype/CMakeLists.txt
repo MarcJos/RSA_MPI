@@ -21,13 +21,17 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 find_package(OpenMP REQUIRED)
 find_package(onika REQUIRED)
 
+## exaNBody
+# these must be set before find_package(exaNBody): they configure how exaNBody
+# builds its grid-related targets (domain-specific particle fields, in particular)
+set(XNB_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/include)
+set(XNB_COMPILE_DEFINITIONS XNB_DOMAIN_SPECIFIC_FIELDS_INCLUDE=\<RSAMPI/fields.h\> RSA_MPI_VERSION=${PROJECT_VERSION})
+set(XNB_APP_HAS_GRID_SPECIALIZATIONS ON)
+
+find_package(exaNBody REQUIRED)
+
 set(rsa_mpi_DIR ${CMAKE_SOURCE_DIR})
 message(STATUS "${rsa_mpi_DIR}/include")
-
-## LATER
-#set(XNB_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/include)
-#set(XNB_COMPILE_DEFINITIONS XNB_DOMAIN_SPECIFIC_FIELDS_INCLUDE=\<rsa_mpi/fields.h\> RSA_MPI_VERSION=${RSA_MPI_VERSION})
-#set(XNB_APP_HAS_GRID_SPECIALIZATIONS ON)
 
 # ======================================
 # === add compiler option with CUDA  ===
@@ -60,7 +64,7 @@ target_compile_options(rsa_mpi PUBLIC ${ONIKA_COMPILE_OPTIONS})
 target_compile_definitions(rsa_mpi PUBLIC ${ONIKA_COMPILE_DEFINITIONS})
 target_include_directories(rsa_mpi PUBLIC ${RSA_MPI_INCLUDE_DIRS})
 target_link_directories(rsa_mpi PUBLIC ${ONIKA_LIBRARY_DIRS}) #${exaDEM_LIBRARY_DIRS})
-target_link_libraries(rsa_mpi PUBLIC ${ONIKA_LIBRARIES})
+target_link_libraries(rsa_mpi PUBLIC ${ONIKA_LIBRARIES} exanbCore)
 
 set(ONIKA_PLUGIN_PATH "${CMAKE_CURRENT_BINARY_DIR}/plugins")
 string(REPLACE ";" ":" ONIKA_PLUGIN_PATH "${ONIKA_PLUGIN_PATH}")

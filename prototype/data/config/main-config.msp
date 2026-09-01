@@ -2,6 +2,7 @@ includes:
   - rsa_mpi_default.msp
   - rsa_mpi_io.msp
   - rsa_mpi_algorithm.msp
+  - rsa_mpi_algorithm_exanb.msp
 
 input_data: nop
 header: nop
@@ -20,8 +21,19 @@ initialize_algo:
 simulation_epilog:
   - paraview_final_block
 
+update_ghost_config:
+  verbose: true
+  update_ghost_config:
+    gpu_buffer_pack: true
+    async_buffer_pack: true
+    staging_buffer: false
+    serialize_pack_send: true
+    wait_all: false
+
+
 simulation:
   - header
+#  - hw_device_init
   - global
   - dimension
   - input_data

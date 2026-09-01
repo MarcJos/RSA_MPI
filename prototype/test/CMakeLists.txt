@@ -57,3 +57,5 @@ add_test(
 set_tests_properties(prototype_multi_size_3D PROPERTIES
   TIMEOUT 120
   PASS_REGULAR_EXPRESSION "Number of Spheres")
+
+add_subdirectory(exanb)

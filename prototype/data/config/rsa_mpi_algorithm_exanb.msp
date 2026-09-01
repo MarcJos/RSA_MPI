@@ -1,0 +1,32 @@
+resolve_candidates_step:
+  loop: true
+  name: resolve_candidates_step
+  condition: any_changed
+  body:
+    - grid_clear_candidate_ghosts
+    - batch:
+       rebind: { grid: candidate_grid, ghost_comm_scheme: candidate_ghost_scheme }
+       body:
+         - ghost_comm_scheme
+         - exanb_update_ghosts
+    - exanb_resolve_candidates_pass
+
+exanb_naive_algorithm:
+  loop: true
+  name: exanb_naive_algorithm
+  condition: continue_loop
+  body:
+    - exanb_local_bounds:
+       global_size: 6000
+    - exanb_naive_candidates
+    - exanb_candidates_to_grid
+    - resolve_candidates_step
+    - exanb_finalize_candidates
+    - batch:
+       rebind: { ghost_comm_scheme: main_ghost_scheme }
+       body:
+         - ghost_comm_scheme
+         - exanb_update_ghosts
+    - exanb_iteration_log
+    - exanb_naive_draw_continue:
+       n_draw: 10

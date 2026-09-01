@@ -1,0 +1,21 @@
+dimension:
+  - dim_3
+
+input_data:
+  - uniform_radius_generator:
+     inf: [0,0,0]
+     sup: [1,1,1]
+     radius: 0.05
+
+initialize_algo:
+  - exanb_domain_init:
+     domain_inf: [0,0,0]
+     domain_sup: [1,1,1]
+  - init_rcb_grid
+  - exanb_pad_grid_ghost:
+     ghost_layer: 1
+
+algorithm: exanb_naive_algorithm
+
+print_parameters: nop
+simulation_epilog: nop
