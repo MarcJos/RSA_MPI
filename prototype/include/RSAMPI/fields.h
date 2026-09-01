@@ -36,13 +36,6 @@ XNB_DECLARE_FIELD(int32_t, confirmed,
                   "still undecided - see exanb_naive::resolve_candidates_pass");
 
 namespace rsa_mpi {
-// note: deliberately not "using namespace ::exanb" here - a using-directive
-// inside "namespace rsa_mpi" leaks into every later reopening of that same
-// namespace within the translation unit (e.g. any operator .cpp that ends up
-// including this file transitively through exanb/core/grid_fields.h),
-// making onika::scg's INPUT/OUTPUT/REQUIRED ambiguous with exanb's re-exported
-// copies of the same symbols there.
-
 // rx, ry and rz are added implicitly
 using RSAFieldSet = ::exanb::FieldSet<::exanb::field::_id, ::exanb::field::_radius, ::exanb::field::_phase,
                                       ::exanb::field::_priority, ::exanb::field::_confirmed>;

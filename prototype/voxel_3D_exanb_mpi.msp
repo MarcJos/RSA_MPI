@@ -14,8 +14,9 @@ initialize_algo:
   - init_rcb_grid
   - exanb_pad_grid_ghost:
      ghost_layer: 1
+  - exanb_voxel_list_init
 
-algorithm: exanb_naive_algorithm
+algorithm: exanb_voxel_algorithm
 
 global:
   paraview_details: true

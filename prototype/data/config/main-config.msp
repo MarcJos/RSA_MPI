@@ -34,6 +34,7 @@ update_ghost_config:
 simulation:
   - header
 #  - hw_device_init
+  - mpi_comm_world
   - global
   - dimension
   - input_data

@@ -3,72 +3,13 @@
 #include <RSAMPI/fields.h>
 #include <exanb/core/domain.h>
 #include <exanb/core/grid.h>
-#include <onika/soatl/field_tuple.h>
 
 #include <algorithm>
-#include <cmath>
 #include <cstdint>
-#include <median_of_medians.hxx>
-#include <operator_algorithm.hxx>
-#include <radius_generator.hxx>
-#include <random>
 #include <vector>
 
 namespace rsa_mpi {
 namespace exanb_naive {
-
-/// One round's drawn candidate spheres (position, radius, phase, priority),
-/// in struct-of-arrays form.
-struct Candidates {
-  std::vector<::exanb::Vec3d> pos;
-  std::vector<double> radius;
-  std::vector<int32_t> phase;
-  std::vector<uint64_t> priority;
-  size_t size() const { return pos.size(); }
-};
-
-/// Per-particle field tuple stored in a candidate_grid/main grid cell.
-using ParticleTuple = ::onika::soatl::FieldTuple<::exanb::field::_rx, ::exanb::field::_ry, ::exanb::field::_rz,
-                                                 ::exanb::field::_id, ::exanb::field::_radius, ::exanb::field::_phase,
-                                                 ::exanb::field::_priority, ::exanb::field::_confirmed>;
-
-/// \brief Draws `n` candidate spheres uniformly in [inf,sup].
-/// \param radius_gen source of per-candidate radius/phase.
-/// \param rng consumed for position, priority, radius and phase, in that order.
-inline Candidates draw_candidates(const ::exanb::Vec3d& inf, const ::exanb::Vec3d& sup, int n,
-                                  sac_de_billes::RadiusGenerator<3>& radius_gen, std::mt19937& rng) {
-  Candidates c;
-  c.pos.resize(n);
-  {
-    std::uniform_real_distribution<double> law(inf.x, sup.x);
-    for (int i = 0; i < n; i++) {
-      c.pos[i].x = law(rng);
-    }
-  }
-  {
-    std::uniform_real_distribution<double> law(inf.y, sup.y);
-    for (int i = 0; i < n; i++) {
-      c.pos[i].y = law(rng);
-    }
-  }
-  {
-    std::uniform_real_distribution<double> law(inf.z, sup.z);
-    for (int i = 0; i < n; i++) {
-      c.pos[i].z = law(rng);
-    }
-  }
-
-  auto priorities = algorithm::generate_priority<int>(n, rng);
-  c.priority.assign(priorities.begin(), priorities.end());
-
-  auto phases_radii = radius_gen(n, rng);
-  const auto& phases = std::get<0>(phases_radii);
-  const auto& radii = std::get<1>(phases_radii);
-  c.radius.assign(radii.begin(), radii.end());
-  c.phase.assign(phases.begin(), phases.end());
-
-  return c;
-}
 
 /// \brief Whether a candidate sphere (p, r) overlaps any particle already in `grid`.
 /// Scans only the 3x3x3 neighborhood of p's cell (real + ghost), which is
@@ -98,15 +39,6 @@ inline bool overlaps_existing(GridT& grid, const ::exanb::Vec3d& p, double r) {
     }
   }
   return false;
-}
-
-/// \brief Inserts a sphere into `grid`'s owning cell (no ghost propagation).
-template <class GridT>
-inline void insert_sphere(GridT& grid, const ::exanb::Vec3d& p, uint64_t id, double r, int32_t phase, uint64_t priority,
-                          int32_t confirmed = 0) {
-  const ::exanb::IJK loc = grid.locate_cell(p);
-  ParticleTuple pt(p.x, p.y, p.z, id, r, phase, priority, confirmed);
-  grid.cell(loc).push_back(pt, grid.cell_allocator());
 }
 
 /// \brief Like overlaps_existing, but only counts a neighbor with strictly
@@ -266,20 +198,6 @@ inline bool resolve_candidates_pass(GridT& main_grid, GridT& candidate_grid, ssi
     }
   }
   return changed;
-}
-
-/// \brief Builds an empty grid with the same geometry as `grid` (including
-/// max_neighbor_distance, needed for ghost_comm_scheme to compute the
-/// correct ghost_layers()).
-template <class GridT>
-inline GridT make_scratch_grid(const GridT& grid) {
-  GridT scratch;
-  scratch.set_origin(grid.origin());
-  scratch.set_cell_size(grid.cell_size());
-  scratch.set_offset(grid.offset());
-  scratch.set_dimension(grid.dimension());
-  scratch.set_max_neighbor_distance(grid.max_neighbor_distance());
-  return scratch;
 }
 
 }  // namespace exanb_naive

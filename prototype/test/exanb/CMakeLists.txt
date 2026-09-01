@@ -12,3 +12,11 @@ add_test(
 set_tests_properties(prototype_exanb_naif_3D PROPERTIES
   TIMEOUT 120
   PASS_REGULAR_EXPRESSION "iteration 10")
+
+add_test(
+  NAME prototype_exanb_voxel_3D
+  COMMAND bash ${CMAKE_CURRENT_BINARY_DIR}/run_msp_test.sh ${CMAKE_CURRENT_SOURCE_DIR}/../../voxel_3D_exanb_mpi.msp)
+
+set_tests_properties(prototype_exanb_voxel_3D PROPERTIES
+  TIMEOUT 60
+  PASS_REGULAR_EXPRESSION "iteration 57")

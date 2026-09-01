@@ -10,3 +10,17 @@ paraview_final_block:
   condition: paraview_final
   body:
     - rsa_mpi_paraview_final
+
+exanb_paraview_details_block:
+  condition: paraview_details
+  body:
+    - exanb_paraview_filename
+    - write_paraview:
+       write_ghost: false
+
+exanb_paraview_final_block:
+  condition: paraview_final
+  body:
+    - exanb_paraview_final_filename
+    - write_paraview:
+       write_ghost: false

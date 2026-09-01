@@ -13,7 +13,8 @@
 // RSA MPI
 #include <RSAMPI/fields.h>
 
-#include <RSAMPI/exanb_naive_algorithm.hxx>
+#include <RSAMPI/exanb_naive_draw.hxx>
+#include <RSAMPI/exanb_naive_types.hxx>
 #include <radius_generator.hxx>
 #include <random>
 

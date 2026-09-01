@@ -1,0 +1,41 @@
+#include <vector>
+#include <array>
+#include <onika/scg/operator.h>
+#include <onika/scg/operator_slot.h>
+#include <onika/scg/operator_factory.h>
+#include <onika/log.h>
+#include <onika/parallel/parallel_execution_context.h>
+
+
+#include <rsa_decoration.hxx>
+#include <rsa_parameters.hxx>
+#include <RSAMPI/make_variant_operator.hpp>
+
+namespace rsa_mpi
+{
+  using namespace onika;
+  using namespace onika::scg;
+
+	template <int DIM> class RSAMPIDisplayRadiusPacking : public OperatorNode
+	{
+    ADD_SLOT(rsa_parameters, RSAParameters, INPUT, DocString{""});
+
+		inline std::string documentation() const override final
+		{
+			return R"EOF()EOF";
+		}
+
+		inline void execute() override final
+		{
+      rsa_parameters& params = *RSAParameters;
+      params.display();
+		}
+	};
+
+  template<int DIM> using RSAMPIDisplayRadiusPackingTmpl = RSAMPIDisplayRadiusPacking<DIM>;
+
+  ONIKA_AUTORUN_INIT(parameters) 
+  { 
+    OperatorNodeFactory::instance()->register_factory("display_radius_packing", make_rsa_mpi_operator<RSAMPIDisplayRadiusPackingTmpl>); 
+  } 
+}

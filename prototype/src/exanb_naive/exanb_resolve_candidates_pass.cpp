@@ -12,7 +12,7 @@
 // RSA MPI
 #include <RSAMPI/fields.h>
 
-#include <RSAMPI/exanb_naive_algorithm.hxx>
+#include <RSAMPI/exanb_naive_resolve.hxx>
 
 namespace rsa_mpi {
 using namespace onika;

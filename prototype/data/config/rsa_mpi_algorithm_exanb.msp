@@ -28,5 +28,26 @@ exanb_naive_algorithm:
          - ghost_comm_scheme
          - exanb_update_ghosts
     - exanb_iteration_log
+    - exanb_paraview_details_block
     - exanb_naive_draw_continue:
        n_draw: 10
+
+exanb_voxel_algorithm:
+  loop: true
+  name: exanb_voxel_algorithm
+  condition: continue_loop
+  body:
+    - exanb_voxel_candidates:
+       size: 6000
+    - exanb_candidates_to_grid
+    - resolve_candidates_step
+    - exanb_finalize_candidates
+    - batch:
+       rebind: { ghost_comm_scheme: main_ghost_scheme }
+       body:
+         - ghost_comm_scheme
+         - exanb_update_ghosts
+    - exanb_voxel_update
+    - exanb_iteration_log
+    - exanb_paraview_details_block
+    - exanb_voxel_algorithm_continue

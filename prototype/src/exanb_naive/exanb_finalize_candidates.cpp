@@ -12,7 +12,7 @@
 // RSA MPI
 #include <RSAMPI/fields.h>
 
-#include <RSAMPI/exanb_naive_algorithm.hxx>
+#include <RSAMPI/exanb_naive_grid.hxx>
 #include <cstdint>
 #include <median_of_medians.hxx>
 #include <radius_generator.hxx>
@@ -32,6 +32,7 @@ class RSAMPIExanbFinalizeCandidates : public OperatorNode {
   ADD_SLOT(uint64_t, next_id, INPUT_OUTPUT, uint64_t(0), DocString{"Next (rank-scoped) particle id to assign"});
 
   ADD_SLOT(uint64_t, nb_added_spheres, OUTPUT, DocString{"Number of spheres committed this round (global)"});
+  ADD_SLOT(uint64_t, nb_added_spheres_local, OUTPUT, DocString{"Number of spheres committed this round (this rank only)"});
 
   inline void execute() override final {
     int rank = 0;
@@ -94,6 +95,7 @@ class RSAMPIExanbFinalizeCandidates : public OperatorNode {
     uint64_t global_added = 0;
     MPI_Allreduce(&local_count, &global_added, 1, MPI_UINT64_T, MPI_SUM, MPI_COMM_WORLD);
     *nb_added_spheres = global_added;
+    *nb_added_spheres_local = local_count;
     RSARadiusGenerator->update_placed(global_added);
   }
 };
