@@ -14,6 +14,7 @@
 
 #include <RSAMPI/exanb_naive_grid.hxx>
 #include <RSAMPI/exanb_naive_types.hxx>
+#include <limits>
 
 namespace rsa_mpi {
 using namespace onika;
@@ -33,6 +34,15 @@ class RSAMPIExanbCandidatesToGrid : public OperatorNode {
 
     *candidate_grid = exanb_naive::make_scratch_grid(*grid);
     *any_changed = true;
+
+    const double cs = grid->cell_size();
+    const exanb::Vec3d origin = grid->origin();
+    const exanb::IJK off = grid->offset();
+    const ssize_t gl = static_cast<ssize_t>(grid->ghost_layers());
+    const exanb::Vec3d sentinel_pos{origin.x + (off.i + gl + 0.5) * cs, origin.y + (off.j + gl + 0.5) * cs,
+                                    origin.z + (off.k + gl + 0.5) * cs};
+    exanb_naive::insert_sphere(*candidate_grid, sentinel_pos, exanb_naive::sentinel_id, 0.0, 0,
+                               std::numeric_limits<uint64_t>::max(), /*confirmed=*/1);
 
     const size_t n = candidates->size();
     for (size_t i = 0; i < n; i++) {

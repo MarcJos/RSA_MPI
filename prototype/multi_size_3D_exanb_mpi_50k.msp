@@ -1,0 +1,29 @@
+dimension:
+  - dim_3
+
+input_data:
+  - multi_radius_generator:
+     inf: [0,0,0]
+     sup: [1,1,1]
+     radii: [0.1, 0.05, 0.025, 0.01]
+     volume_fractions: [0.12, 0.12, 0.12, 1.0]
+
+initialize_algo:
+  - exanb_domain_init:
+     domain_inf: [0,0,0]
+     domain_sup: [1,1,1]
+  - init_rcb_grid
+  - exanb_pad_grid_ghost:
+     ghost_layer: 1
+  - exanb_voxel_list_init
+
+algorithm: exanb_voxel_algorithm
+
+global:
+  paraview_details: true
+  paraview_final: true
+  output_dir: "MutiRadiusExampleExanb50K"
+
+print_parameters: nop
+simulation_epilog:
+  - exanb_paraview_final_block

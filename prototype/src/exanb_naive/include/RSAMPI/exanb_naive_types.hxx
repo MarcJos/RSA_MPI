@@ -5,6 +5,7 @@
 #include <onika/soatl/field_tuple.h>
 
 #include <cstdint>
+#include <limits>
 #include <vector>
 
 namespace rsa_mpi {
@@ -24,6 +25,8 @@ struct Candidates {
 using ParticleTuple = ::onika::soatl::FieldTuple<::exanb::field::_rx, ::exanb::field::_ry, ::exanb::field::_rz,
                                                  ::exanb::field::_id, ::exanb::field::_radius, ::exanb::field::_phase,
                                                  ::exanb::field::_priority, ::exanb::field::_confirmed>;
+
+inline constexpr uint64_t sentinel_id = std::numeric_limits<uint64_t>::max();
 
 }  // namespace exanb_naive
 }  // namespace rsa_mpi

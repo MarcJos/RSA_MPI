@@ -13,6 +13,7 @@
 #include <RSAMPI/fields.h>
 
 #include <RSAMPI/exanb_naive_grid.hxx>
+#include <RSAMPI/exanb_naive_types.hxx>
 #include <cstdint>
 #include <median_of_medians.hxx>
 #include <radius_generator.hxx>
@@ -55,6 +56,9 @@ class RSAMPIExanbFinalizeCandidates : public OperatorNode {
           const size_t n = cell.size();
           for (size_t s = 0; s < n; s++) {
             if (cell[exanb::field::confirmed][s] == 0) {
+              continue;
+            }
+            if (cell[exanb::field::id][s] == exanb_naive::sentinel_id) {
               continue;
             }
             survivors.push_back(
