@@ -4,6 +4,11 @@
 
 #include <rsa_decoration.hxx>
 #include <limits>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+using namespace std;
 
 template<class TypeVector, class Order>
 double median_of_medians::find_pivot_for_first_elements(const TypeVector& a_vector_of_values,
@@ -14,15 +19,15 @@ double median_of_medians::find_pivot_for_first_elements(const TypeVector& a_vect
     // Case errors
     if (a_nb_first_elements > global_size) {
         std::cerr << __PRETTY_FUNCTION__ << std::endl;
-        throw runtime_error("Impossible to find the pivot for N first elements if N is smaller than the size of the array");
+        throw std::runtime_error("Impossible to find the pivot for N first elements if N is smaller than the size of the array");
     }
     if (a_nb_first_elements <= 0) {
         std::cerr << __PRETTY_FUNCTION__ << std::endl;
-        throw runtime_error("Impossible to find the pivot for N first elements if N  <= 0");
+        throw std::runtime_error("Impossible to find the pivot for N first elements if N  <= 0");
     }
     if (global_size == 0) {
         std::cerr << __PRETTY_FUNCTION__ << std::endl;
-        throw runtime_error("Impossible to find the pivot for N first elements if no element");
+        throw std::runtime_error("Impossible to find the pivot for N first elements if no element");
     }
     // Case errors
 
@@ -52,7 +57,7 @@ double median_of_medians::find_pivot_for_first_elements(const TypeVector& a_vect
     // ERROR
     if (pointer_to_pivot == all_candidates.end()) {
         std::cerr << __PRETTY_FUNCTION__ << std::endl;
-        throw runtime_error("Unexpected - 0");
+        throw std::runtime_error("Unexpected - 0");
     }
     //
     //
@@ -71,7 +76,7 @@ double median_of_medians::find_pivot_for_first_elements(const TypeVector& a_vect
                 if (j == rsa_mpi::get_my_rank()) {
                     std::cerr << "####### BEGIN " << j << std::endl;
                     for (size_t i = 0; i < vector_copy.size(); i++) {
-                        std::cerr << to_string(vector_copy[i]) << endl;;
+                        std::cerr << std::to_string(vector_copy[i]) << std::endl;;
                     }
                     std::cerr << "####### END " << j << std::endl;
                 }
@@ -82,7 +87,7 @@ double median_of_medians::find_pivot_for_first_elements(const TypeVector& a_vect
             rsa_mpi::message("####### BEGIN \n");
             for (size_t i = 0; i < all_candidates.size(); i++) {
                 double a_candidate_pivot = all_candidates[i];
-                rsa_mpi::message(to_string(all_candidates[i]) + " : " + to_string(median_of_medians::auxi::global_nb_smaller_than_pivot(vector_copy,
+                rsa_mpi::message(std::to_string(all_candidates[i]) + " : " + std::to_string(median_of_medians::auxi::global_nb_smaller_than_pivot(vector_copy,
                     a_candidate_pivot, order)) + "\n");
             }
             rsa_mpi::message("####### END \n");
@@ -90,14 +95,14 @@ double median_of_medians::find_pivot_for_first_elements(const TypeVector& a_vect
             //
 
             MPI_Barrier(MPI_COMM_WORLD);
-            rsa_mpi::message(to_string(average_percentage));
-            rsa_mpi::message(to_string(nb_elements_below) + " " + to_string(a_nb_first_elements));
+            rsa_mpi::message(std::to_string(average_percentage));
+            rsa_mpi::message(std::to_string(nb_elements_below) + " " + std::to_string(a_nb_first_elements));
             end_barrier = rsa_mpi::compute_mpi_sum(my_barrier);
             std::cerr << end_barrier;
             MPI_Barrier(MPI_COMM_WORLD);
             // error message
             rsa_mpi::message(__PRETTY_FUNCTION__);
-            throw runtime_error("Unexpected - 1");
+            throw std::runtime_error("Unexpected - 1");
         }
         // ERROR
         else {

@@ -4,6 +4,7 @@
 
 #include <mpi.h>
 
+#include <array>
 #include <basic_types.hxx>
 #include <rsa_buffer.hxx>
 #include <rsa_grid.hxx>
@@ -14,6 +15,14 @@
 //#include <operator_algorithm.hxx>
 
 using namespace sac_de_billes;
+
+//! @brief default per-axis periodicity for rsa_domain's constructor: every axis wraps around (historical behavior).
+template<int DIM>
+inline std::array<bool, DIM> rsa_domain_all_periodic() {
+	std::array<bool, DIM> a;
+	a.fill(true);
+	return a;
+}
 
 template<int DIM>
 class rsa_domain {
@@ -50,8 +59,10 @@ public:
 	//! @param a_rad : the size of each cell in any direction should be larger than a_rad. This radius is usually the largest radius of placed spheres.
 	//! @brief: interface class for ::rsa_domain<DIM>. Acts as a reference.
 	//! Pave a cuboid $`[l_min[0], l_max[0]] x ... [l_min[D-1], l_max[D-1]]`$."
+	//! @param a_periodic : per-axis periodicity (default: all true, the historical behavior).
 	rsa_domain(const vec_d<DIM>& global_inf, const vec_d<DIM>& global_sup,
-		const int a_ghost_layer = 0, const double a_rad = 0.05);
+		const int a_ghost_layer = 0, const double a_rad = 0.05,
+		const std::array<bool, DIM>& a_periodic = rsa_domain_all_periodic<DIM>());
 
 	//! @brief: accessor
 	double get_m_rad() const { return m_rad; }
@@ -77,7 +88,8 @@ public:
 	//! for every subdomains according to their mpi ranks.
 	//! @warning : Modify it for having voxels instead of slices.
 	void lb(const int a_id, const int a_n_mpi,
-		const vec_d<DIM>& global_inf, const vec_d<DIM>& global_sup, const double a_rad);
+		const vec_d<DIM>& global_inf, const vec_d<DIM>& global_sup, const double a_rad,
+		const std::array<bool, DIM>& a_periodic = rsa_domain_all_periodic<DIM>());
 	//! @brief : This function updates the ghost area with new particles between two draws.
 	void update_ghost(rsa_data_storage<DIM>& a_ghost_data);
 	//!

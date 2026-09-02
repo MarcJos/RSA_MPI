@@ -25,8 +25,16 @@ find_package(onika REQUIRED)
 # these must be set before find_package(exaNBody): they configure how exaNBody
 # builds its grid-related targets (domain-specific particle fields, in particular)
 set(XNB_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/include)
-set(XNB_COMPILE_DEFINITIONS XNB_DOMAIN_SPECIFIC_FIELDS_INCLUDE=\<RSAMPI/fields.h\> RSA_MPI_VERSION=${PROJECT_VERSION})
+set(XNB_COMPILE_DEFINITIONS "XNB_DOMAIN_SPECIFIC_FIELDS_INCLUDE=<RSAMPI/fields.h>" RSA_MPI_VERSION=${PROJECT_VERSION})
 set(XNB_APP_HAS_GRID_SPECIALIZATIONS ON)
+
+# Only exanbGridCellParticles (init_rcb_grid), exanbMPI (ghost_comm_scheme,
+# exanb_update_ghosts) and exanbIO (write_paraview) are actually used by our
+# operators; the rest are MD/DEM-specific plugins we never reference.
+foreach(_xnb_unused_plugin exanbAMR exanbAnalytics exanbCompute exanbDebug exanbDefBox
+                           exanbExtraStorage exanbLogic exanbMesh exanbParticleNeighbors)
+  set(ONIKA_BUILD_${_xnb_unused_plugin} OFF CACHE BOOL "Build ${_xnb_unused_plugin}" FORCE)
+endforeach()
 
 find_package(exaNBody REQUIRED)
 

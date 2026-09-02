@@ -10,7 +10,9 @@ Largely inspired from Merope
 
 #include <random>
 
+#include "basic_types.hxx"
 #include "link_to_auxi.hxx"
+#include "rsa_random.hxx"
 
 
 namespace voxel_list {
@@ -64,6 +66,14 @@ public:
     //! @param a_minimal_radius : minimal radius of the rsa simulation
     template<class RSA_GRID>
     void subdivide_uncovered(const RSA_GRID& rsa_cell, double a_minimal_radius);
+    //! @brief like remove_covered, but the coverage test is a predicate
+    //! (origin_voxel, voxel_lengths, corners_voxel) -> bool instead of an
+    //! RSA_GRID. Additive: does not affect remove_covered or its callers.
+    template<class Pred>
+    void remove_covered_if(Pred&& a_is_covered);
+    //! @brief like subdivide_uncovered, predicate-based (see remove_covered_if)
+    template<class Pred>
+    void subdivide_uncovered_if(Pred&& a_is_covered);
     //! @brief get the total number of voxels
     size_t size() const;
     //! @return the area of all the voxels
@@ -92,6 +102,9 @@ public:
     template<class RSA_GRID>
     bool is_covered(int64_t a_id_voxel,
         const RSA_GRID& rsa_cell, double a_minimal_radius) const;
+    //! @brief like is_covered, predicate-based (see remove_covered_if)
+    template<class Pred>
+    bool is_covered_if(int64_t a_id_voxel, Pred&& a_is_covered) const;
 
     void print(std::ostream& f) const;
 
