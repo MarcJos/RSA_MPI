@@ -25,3 +25,4 @@ global:
 print_parameters: nop
 simulation_epilog:
   - exanb_paraview_final_block
+  - exanb_write_xyz

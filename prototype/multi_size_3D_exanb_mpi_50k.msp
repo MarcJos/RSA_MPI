@@ -7,6 +7,7 @@ input_data:
      sup: [1,1,1]
      radii: [0.1, 0.05, 0.025, 0.01]
      volume_fractions: [0.12, 0.12, 0.12, 1.0]
+     phases: [0, 1, 2, 3]
 
 initialize_algo:
   - exanb_domain_init:
@@ -27,3 +28,4 @@ global:
 print_parameters: nop
 simulation_epilog:
   - exanb_paraview_final_block
+  - exanb_write_xyz
