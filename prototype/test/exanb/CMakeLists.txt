@@ -28,3 +28,11 @@ add_test(
 set_tests_properties(prototype_exanb_multi_size_3D PROPERTIES
   TIMEOUT 60
   PASS_REGULAR_EXPRESSION "iteration 36")
+
+add_test(
+  NAME prototype_exanb_region_multi_size_3D
+  COMMAND bash ${CMAKE_CURRENT_BINARY_DIR}/run_msp_test.sh ${CMAKE_CURRENT_SOURCE_DIR}/../../region_multi_size_3D_exanb_mpi.msp)
+
+set_tests_properties(prototype_exanb_region_multi_size_3D PROPERTIES
+  TIMEOUT 90
+  PASS_REGULAR_EXPRESSION "removed 3005 particle")
