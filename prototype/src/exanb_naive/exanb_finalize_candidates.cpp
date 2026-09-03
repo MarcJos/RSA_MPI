@@ -7,6 +7,7 @@
 // ExaNBody
 #include <exanb/core/domain.h>
 #include <exanb/core/grid.h>
+#include <exanb/core/grid_fields.h>
 #include <exanb/core/make_grid_variant_operator.h>
 
 // RSA MPI
@@ -45,7 +46,7 @@ class RSAMPIExanbFinalizeCandidates : public OperatorNode {
     struct Survivor {
       exanb::Vec3d pos;
       double radius;
-      int32_t phase;
+      exanb::ParticleTypeInt type;
       uint64_t priority;
     };
     std::vector<Survivor> survivors;
@@ -63,7 +64,7 @@ class RSAMPIExanbFinalizeCandidates : public OperatorNode {
             }
             survivors.push_back(
                 Survivor{exanb::Vec3d{cell[exanb::field::rx][s], cell[exanb::field::ry][s], cell[exanb::field::rz][s]},
-                         cell[exanb::field::radius][s], cell[exanb::field::phase][s], cell[exanb::field::priority][s]});
+                         cell[exanb::field::radius][s], cell[exanb::field::type][s], cell[exanb::field::priority][s]});
           }
         }
       }
@@ -92,7 +93,7 @@ class RSAMPIExanbFinalizeCandidates : public OperatorNode {
 
     for (const auto& sv : survivors) {
       const uint64_t id = (uint64_t(rank) << 40) | (*next_id)++;
-      exanb_naive::insert_sphere(*grid, sv.pos, id, sv.radius, sv.phase, sv.priority);
+      exanb_naive::insert_sphere(*grid, sv.pos, id, sv.radius, sv.type, sv.priority);
     }
     grid->rebuild_particle_offsets();
 

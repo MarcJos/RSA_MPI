@@ -2,6 +2,7 @@
 
 #include <exanb/core/domain.h>
 #include <exanb/core/grid.h>
+#include <exanb/core/grid_fields.h>
 
 #include <RSAMPI/exanb_naive_types.hxx>
 #include <cstdint>
@@ -11,10 +12,10 @@ namespace exanb_naive {
 
 /// \brief Inserts a sphere into `grid`'s owning cell (no ghost propagation).
 template <class GridT>
-inline void insert_sphere(GridT& grid, const ::exanb::Vec3d& p, uint64_t id, double r, int32_t phase, uint64_t priority,
-                          int32_t confirmed = 0) {
+inline void insert_sphere(GridT& grid, const ::exanb::Vec3d& p, uint64_t id, double r, ::exanb::ParticleTypeInt type,
+                          uint64_t priority, int32_t confirmed = 0) {
   const ::exanb::IJK loc = grid.locate_cell(p);
-  ParticleTuple pt(p.x, p.y, p.z, id, r, phase, priority, confirmed);
+  ParticleTuple pt(p.x, p.y, p.z, id, r, type, priority, confirmed);
   grid.cell(loc).push_back(pt, grid.cell_allocator());
 }
 

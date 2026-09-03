@@ -47,7 +47,7 @@ class RSAMPIExanbCandidatesToGrid : public OperatorNode {
     const size_t n = candidates->size();
     for (size_t i = 0; i < n; i++) {
       const uint64_t id = (uint64_t(rank) << 40) | uint64_t(i);
-      exanb_naive::insert_sphere(*candidate_grid, candidates->pos[i], id, candidates->radius[i], candidates->phase[i],
+      exanb_naive::insert_sphere(*candidate_grid, candidates->pos[i], id, candidates->radius[i], candidates->type[i],
                                  candidates->priority[i]);
     }
     candidate_grid->rebuild_particle_offsets();

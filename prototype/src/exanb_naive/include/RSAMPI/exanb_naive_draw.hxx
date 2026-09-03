@@ -13,8 +13,8 @@ namespace rsa_mpi {
 namespace exanb_naive {
 
 /// \brief Draws `n` candidate spheres uniformly in [inf,sup].
-/// \param radius_gen source of per-candidate radius/phase.
-/// \param rng consumed for position, priority, radius and phase, in that order.
+/// \param radius_gen source of per-candidate radius/type.
+/// \param rng consumed for position, priority, radius and type, in that order.
 inline Candidates draw_candidates(const ::exanb::Vec3d& inf, const ::exanb::Vec3d& sup, int n,
                                   sac_de_billes::RadiusGenerator<3>& radius_gen, std::mt19937& rng) {
   Candidates c;
@@ -45,7 +45,7 @@ inline Candidates draw_candidates(const ::exanb::Vec3d& inf, const ::exanb::Vec3
   const auto& phases = std::get<0>(phases_radii);
   const auto& radii = std::get<1>(phases_radii);
   c.radius.assign(radii.begin(), radii.end());
-  c.phase.assign(phases.begin(), phases.end());
+  c.type.assign(phases.begin(), phases.end());
 
   return c;
 }
@@ -68,7 +68,7 @@ inline Candidates draw_candidates_at(const std::vector<sac_de_billes::Point<3>>&
   const auto& phases = std::get<0>(phases_radii);
   const auto& radii = std::get<1>(phases_radii);
   c.radius.assign(radii.begin(), radii.end());
-  c.phase.assign(phases.begin(), phases.end());
+  c.type.assign(phases.begin(), phases.end());
 
   return c;
 }

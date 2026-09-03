@@ -25,10 +25,9 @@ under the License.
 
 #include <cstdint>
 
-// position (rx, ry, rz) and id are already declared by exanb/core/grid_fields.h;
+// position (rx, ry, rz), id and type are already declared by exanb/core/grid_fields.h;
 // rsa_data_storage's remaining per-sphere attributes become their own fields here.
 XNB_DECLARE_FIELD(double, radius, "sphere radius");
-XNB_DECLARE_FIELD(int32_t, phase, "sphere phase");
 XNB_DECLARE_FIELD(uint64_t, priority, "draw priority, used to resolve placement conflicts");
 XNB_DECLARE_FIELD(int32_t, confirmed,
                   "multi-pass candidate resolution: 1 once this candidate is proven to have no "
@@ -36,8 +35,8 @@ XNB_DECLARE_FIELD(int32_t, confirmed,
                   "still undecided - see exanb_naive::resolve_candidates_pass");
 
 namespace rsa_mpi {
-// rx, ry and rz are added implicitly
-using RSAFieldSet = ::exanb::FieldSet<::exanb::field::_id, ::exanb::field::_radius, ::exanb::field::_phase,
+// rx, ry, rz, id and type are added implicitly
+using RSAFieldSet = ::exanb::FieldSet<::exanb::field::_id, ::exanb::field::_type, ::exanb::field::_radius,
                                       ::exanb::field::_priority, ::exanb::field::_confirmed>;
 
 static inline constexpr ::exanb::FieldSets<RSAFieldSet> available_field_sets_v = {};

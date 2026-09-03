@@ -7,7 +7,7 @@
 
 namespace rsa_mpi {
 using RSAGhostFieldSet = ::exanb::FieldSet<::exanb::field::_rx, ::exanb::field::_ry, ::exanb::field::_rz,
-                                           ::exanb::field::_id, ::exanb::field::_radius, ::exanb::field::_phase,
+                                           ::exanb::field::_id, ::exanb::field::_radius, ::exanb::field::_type,
                                            ::exanb::field::_priority, ::exanb::field::_confirmed>;
 
 template <class GridT>
