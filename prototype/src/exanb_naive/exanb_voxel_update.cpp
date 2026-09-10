@@ -39,8 +39,21 @@ class RSAMPIExanbVoxelUpdate : public OperatorNode {
     const double miss_rate = double(total_nb_miss) / (1e-6 + double(total_nb_shots));
 
     const double desired_miss_rate = algorithm::auxi::magical_default_miss_rate<3>();
-    exanb_naive::update_covered_voxels(*uncovered_voxels, *grid, RSARadiusGenerator->get_min_radius(), miss_rate,
-                                       desired_miss_rate);
+    const auto stats = exanb_naive::update_covered_voxels(*uncovered_voxels, *grid, RSARadiusGenerator->get_min_radius(),
+                                                          RSARadiusGenerator->get_max_radius(), miss_rate,
+                                                          desired_miss_rate);
+
+    if (stats.refined) {
+      int64_t total_covered = 0, total_generated = 0;
+      MPI_Allreduce(&stats.covered, &total_covered, 1, MPI_INT64_T, MPI_SUM, MPI_COMM_WORLD);
+      MPI_Allreduce(&stats.generated, &total_generated, 1, MPI_INT64_T, MPI_SUM, MPI_COMM_WORLD);
+      int rank = 0;
+      MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+      if (rank == 0) {
+        onika::lout << "Voxels refined: " << total_covered << " covered, " << total_generated << " generated"
+                    << std::endl;
+      }
+    }
 
     if (*verbose) {
       int64_t nb_voxels = int64_t(uncovered_voxels->size());

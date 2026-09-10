@@ -133,23 +133,29 @@ void list_of_voxels<DIM>::subdivide_uncovered_if(Pred&& a_is_covered) {
     auto new_corners_voxel = m_corners_voxel;
     auxi::create_corners_voxel_inplace<DIM>(new_voxel_lengths, new_corners_voxel);
 
+    const int64_t total_children = static_cast<int64_t>(old_size) * nb_corners;
+    std::vector<DiscPoint<DIM>> child_coords(total_children);
+    BooleanVector keep(total_children, false);
+
+#pragma omp parallel for
+    for (int64_t idx = 0; idx < total_children; idx++) {
+        const uint64_t i = idx / nb_corners;
+        const size_t i_corner = idx % nb_corners;
+        Point<DIM> origin_voxel;
+        for (size_t d = 0; d < DIM; d++) {
+            int64_t new_vox_coord = 2 * m_voxel_coordinates[i][d] + tabcorner[i_corner][d];
+            child_coords[idx][d] = new_vox_coord;
+            origin_voxel[d] = m_origin[d] + new_vox_coord * new_voxel_lengths[d];
+        }
+        keep[idx] = !a_is_covered(origin_voxel, new_voxel_lengths, new_corners_voxel);
+    }
+
     static std::vector<DiscPoint<DIM>> new_voxel_coordinates{};
-    new_voxel_coordinates.resize(10);
+    new_voxel_coordinates.resize(total_children);
     uint64_t k = 0;
-    for (uint64_t i = 0; i < old_size; i++) {
-        for (size_t i_corner = 0; i_corner < nb_corners; i_corner++) {
-            Point<DIM> origin_voxel;
-            for (size_t d = 0; d < DIM; d++) {
-                int64_t new_vox_coord = 2 * m_voxel_coordinates[i][d] + tabcorner[i_corner][d];
-                new_voxel_coordinates[k][d] = new_vox_coord;
-                origin_voxel[d] = m_origin[d] + new_vox_coord * new_voxel_lengths[d];
-            }
-            if (not a_is_covered(origin_voxel, new_voxel_lengths, new_corners_voxel)) {
-                k++;
-                if (k >= new_voxel_coordinates.size()) {
-                    new_voxel_coordinates.resize(1.5 * new_voxel_coordinates.size());
-                }
-            }
+    for (int64_t idx = 0; idx < total_children; idx++) {
+        if (keep[idx]) {
+            new_voxel_coordinates[k++] = child_coords[idx];
         }
     }
     new_voxel_coordinates.resize(k);

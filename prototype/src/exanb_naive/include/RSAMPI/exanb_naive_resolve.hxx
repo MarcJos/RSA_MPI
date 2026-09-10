@@ -1,6 +1,8 @@
 #pragma once
 
+#include <RSAMPI/exanb_naive_amr.hxx>
 #include <RSAMPI/fields.h>
+#include <exanb/amr/amr_grid.h>
 #include <exanb/core/domain.h>
 #include <exanb/core/grid.h>
 
@@ -13,32 +15,35 @@ namespace exanb_naive {
 
 /// \brief Whether a candidate sphere (p, r) overlaps any particle already in `grid`.
 /// Scans only the 3x3x3 neighborhood of p's cell (real + ghost), which is
-/// sufficient since cell_size >= 2*max radius.
+/// sufficient since cell_size >= 2*max radius; within each neighbor cell,
+/// `amr` narrows the scan to the sub-cells actually within reach.
 template <class GridT>
-inline bool overlaps_existing(GridT& grid, const ::exanb::Vec3d& p, double r) {
+inline bool overlaps_existing(GridT& grid, const ::exanb::AmrGrid& amr, const ::exanb::Vec3d& p, double r,
+                              double max_radius) {
   const ::exanb::IJK loc = grid.locate_cell(p);
-  for (ssize_t di = -1; di <= 1; di++) {
-    for (ssize_t dj = -1; dj <= 1; dj++) {
-      for (ssize_t dk = -1; dk <= 1; dk++) {
+  const double reach = r + max_radius;
+  bool found = false;
+  for (ssize_t di = -1; di <= 1 && !found; di++) {
+    for (ssize_t dj = -1; dj <= 1 && !found; dj++) {
+      for (ssize_t dk = -1; dk <= 1 && !found; dk++) {
         const ::exanb::IJK nloc{loc.i + di, loc.j + dj, loc.k + dk};
         if (!grid.contains(nloc)) {
           continue;
         }
-        auto& cell = grid.cell(nloc);
-        const size_t n = cell.size();
-        for (size_t s = 0; s < n; s++) {
+        for_each_particle_near(grid, amr, nloc, reach, p, [&](auto& cell, size_t s) {
+          if (found) return;
           const double dx = cell[::exanb::field::rx][s] - p.x;
           const double dy = cell[::exanb::field::ry][s] - p.y;
           const double dz = cell[::exanb::field::rz][s] - p.z;
           const double rr = cell[::exanb::field::radius][s] + r;
           if (dx * dx + dy * dy + dz * dz < rr * rr) {
-            return true;
+            found = true;
           }
-        }
+        });
       }
     }
   }
-  return false;
+  return found;
 }
 
 /// \brief Like overlaps_existing, but only counts a neighbor with strictly
@@ -46,47 +51,58 @@ inline bool overlaps_existing(GridT& grid, const ::exanb::Vec3d& p, double r) {
 /// \param require_confirmed if true, a neighbor only counts if its
 /// `confirmed` field is also set (see resolve_candidates_pass).
 template <class GridT>
-inline bool overlaps_lower_priority(GridT& grid, const ::exanb::Vec3d& p, double r, uint64_t my_priority,
-                                    uint64_t skip_id, bool require_confirmed = false) {
+inline bool overlaps_lower_priority(GridT& grid, const ::exanb::AmrGrid& amr, const ::exanb::Vec3d& p, double r,
+                                    double max_radius, uint64_t my_priority, uint64_t skip_id,
+                                    bool require_confirmed = false) {
   const ::exanb::IJK loc = grid.locate_cell(p);
-  for (ssize_t di = -1; di <= 1; di++) {
-    for (ssize_t dj = -1; dj <= 1; dj++) {
-      for (ssize_t dk = -1; dk <= 1; dk++) {
+  const double reach = r + max_radius;
+  bool found = false;
+  for (ssize_t di = -1; di <= 1 && !found; di++) {
+    for (ssize_t dj = -1; dj <= 1 && !found; dj++) {
+      for (ssize_t dk = -1; dk <= 1 && !found; dk++) {
         const ::exanb::IJK nloc{loc.i + di, loc.j + dj, loc.k + dk};
         if (!grid.contains(nloc)) continue;
-        auto& cell = grid.cell(nloc);
-        const size_t n = cell.size();
-        for (size_t s = 0; s < n; s++) {
+        for_each_particle_near(grid, amr, nloc, reach, p, [&](auto& cell, size_t s) {
+          if (found) return;
           if (cell[::exanb::field::id][s] == skip_id) {
-            continue;
+            return;
           }
           if (cell[::exanb::field::priority][s] >= my_priority) {
-            continue;
+            return;
           }
           if (require_confirmed && cell[::exanb::field::confirmed][s] == 0) {
-            continue;
+            return;
           }
           const double dx = cell[::exanb::field::rx][s] - p.x;
           const double dy = cell[::exanb::field::ry][s] - p.y;
           const double dz = cell[::exanb::field::rz][s] - p.z;
           const double rr = cell[::exanb::field::radius][s] + r;
-          if (dx * dx + dy * dy + dz * dz < rr * rr) return true;
-        }
+          if (dx * dx + dy * dy + dz * dz < rr * rr) {
+            found = true;
+          }
+        });
       }
     }
   }
-  return false;
+  return found;
 }
 
+/// \brief Local (this rank's) outcome of a call to resolve_candidates_pass.
+struct ResolvePassStats {
+  bool changed = false;      ///< true if this rank confirmed or rejected at least one candidate
+  int64_t undecided = 0;     ///< still-alive, not-yet-confirmed candidates remaining after this pass
+};
+
 /// \brief One pass of the multi-rank candidate-resolution loop.
-///
-/// \return true if this rank changed anything this pass (caller
-/// MPI_Allreduce-ORs this across ranks).
 template <class GridT>
-inline bool resolve_candidates_pass(GridT& main_grid, GridT& candidate_grid, ssize_t ghost_layer) {
+inline ResolvePassStats resolve_candidates_pass(GridT& main_grid, GridT& candidate_grid, ssize_t ghost_layer,
+                                                double max_radius) {
   const ::exanb::IJK dim = candidate_grid.dimension();
   const ssize_t gl = ghost_layer;
   const size_t n_real_cells = size_t(dim.i - 2 * gl) * size_t(dim.j - 2 * gl) * size_t(dim.k - 2 * gl);
+
+  const ::exanb::AmrGrid main_amr = build_amr_index(main_grid);
+  const ::exanb::AmrGrid candidate_amr = build_amr_index(candidate_grid);
 
   // phase 1 (read-then-mutate, like the old single-phase version): decide,
   // from one consistent pre-pass snapshot, who dies to main_grid and who
@@ -112,9 +128,9 @@ inline bool resolve_candidates_pass(GridT& main_grid, GridT& candidate_grid, ssi
           const double r = cell[::exanb::field::radius][s];
           const uint64_t id = cell[::exanb::field::id][s];
           const uint64_t priority = cell[::exanb::field::priority][s];
-          if (overlaps_existing(main_grid, p, r)) {
+          if (overlaps_existing(main_grid, main_amr, p, r, max_radius)) {
             dead.push_back(s);
-          } else if (!overlaps_lower_priority(candidate_grid, p, r, priority, id)) {
+          } else if (!overlaps_lower_priority(candidate_grid, candidate_amr, p, r, max_radius, priority, id)) {
             newly_confirmed.push_back(s);
           }
         }
@@ -169,7 +185,7 @@ inline bool resolve_candidates_pass(GridT& main_grid, GridT& candidate_grid, ssi
             const double r = cell[::exanb::field::radius][s];
             const uint64_t id = cell[::exanb::field::id][s];
             const uint64_t priority = cell[::exanb::field::priority][s];
-            if (overlaps_lower_priority(candidate_grid, p, r, priority, id, true)) {
+            if (overlaps_lower_priority(candidate_grid, candidate_amr, p, r, max_radius, priority, id, true)) {
               dead.push_back(s);
             }
           }
@@ -197,7 +213,23 @@ inline bool resolve_candidates_pass(GridT& main_grid, GridT& candidate_grid, ssi
       }
     }
   }
-  return changed;
+
+  int64_t undecided = 0;
+  for (ssize_t i = gl; i < dim.i - gl; i++) {
+    for (ssize_t j = gl; j < dim.j - gl; j++) {
+      for (ssize_t k = gl; k < dim.k - gl; k++) {
+        auto& cell = candidate_grid.cell(::exanb::IJK{i, j, k});
+        const size_t n = cell.size();
+        for (size_t s = 0; s < n; s++) {
+          if (cell[::exanb::field::confirmed][s] == 0) {
+            ++undecided;
+          }
+        }
+      }
+    }
+  }
+
+  return ResolvePassStats{changed, undecided};
 }
 
 }  // namespace exanb_naive
