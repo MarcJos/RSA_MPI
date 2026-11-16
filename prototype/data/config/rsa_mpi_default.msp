@@ -1,0 +1,15 @@
+
+global:
+  ghost_layer: 1
+  seed: 0
+  size: 6000
+  n_draw: 10
+  output_dir: RSAOutPutDir
+  paraview_details: false
+  paraview_final: false
+  continue_loop: true
+
+configuration:
+  profiling:
+    exectime: false
+    summary: true

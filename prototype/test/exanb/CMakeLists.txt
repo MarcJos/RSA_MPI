@@ -1,0 +1,38 @@
+set(PROTOTYPE_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR}/../..)
+
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/../run_msp_test.sh.in
+  ${CMAKE_CURRENT_BINARY_DIR}/run_msp_test.sh
+  @ONLY)
+
+add_test(
+  NAME prototype_exanb_naif_3D
+  COMMAND bash ${CMAKE_CURRENT_BINARY_DIR}/run_msp_test.sh ${CMAKE_CURRENT_SOURCE_DIR}/../../naif_3D_exanb_mpi.msp)
+
+set_tests_properties(prototype_exanb_naif_3D PROPERTIES
+  TIMEOUT 120
+  PASS_REGULAR_EXPRESSION "iteration 10")
+
+add_test(
+  NAME prototype_exanb_voxel_3D
+  COMMAND bash ${CMAKE_CURRENT_BINARY_DIR}/run_msp_test.sh ${CMAKE_CURRENT_SOURCE_DIR}/../../voxel_3D_exanb_mpi.msp)
+
+set_tests_properties(prototype_exanb_voxel_3D PROPERTIES
+  TIMEOUT 60
+  PASS_REGULAR_EXPRESSION "iteration 57")
+
+add_test(
+  NAME prototype_exanb_multi_size_3D
+  COMMAND bash ${CMAKE_CURRENT_BINARY_DIR}/run_msp_test.sh ${CMAKE_CURRENT_SOURCE_DIR}/../../multi_size_3D_exanb_mpi.msp)
+
+set_tests_properties(prototype_exanb_multi_size_3D PROPERTIES
+  TIMEOUT 60
+  PASS_REGULAR_EXPRESSION "iteration 36")
+
+add_test(
+  NAME prototype_exanb_region_multi_size_3D
+  COMMAND bash ${CMAKE_CURRENT_BINARY_DIR}/run_msp_test.sh ${CMAKE_CURRENT_SOURCE_DIR}/../../region_multi_size_3D_exanb_mpi.msp)
+
+set_tests_properties(prototype_exanb_region_multi_size_3D PROPERTIES
+  TIMEOUT 90
+  PASS_REGULAR_EXPRESSION "removed 3005 particle")

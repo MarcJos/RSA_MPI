@@ -3,6 +3,7 @@
 #pragma once
 #include <random>
 #include <iostream>
+#include <rsa_decoration.hxx>
 
 namespace law {
 template<class TYPE = double>

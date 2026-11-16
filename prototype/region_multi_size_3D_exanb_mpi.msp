@@ -1,0 +1,42 @@
+dimension:
+  - dim_3
+
+input_data:
+  - multi_radius_generator:
+     inf: [0,0,0]
+     sup: [1,1,1]
+     radii: [0.1, 0.05, 0.025]
+     volume_fractions: [0.15, 0.15, 1.0]
+     phases: [0, 1, 2]
+
+initialize_algo:
+  - exanb_domain_init:
+     domain_inf: [0,0,0]
+     domain_sup: [1,1,1]
+  - init_rcb_grid
+  - exanb_pad_grid_ghost:
+     ghost_layer: 1
+  - exanb_voxel_list_init
+
+algorithm: exanb_voxel_algorithm
+
+global:
+  paraview_details: true
+  paraview_final: true
+  output_dir: "RegionMultiSizeExampleExanb"
+
+print_parameters: nop
+simulation_epilog:
+  - exanb_paraview_final_block
+  - exanb_region_filter:
+     particle_regions:
+       - CYL:
+           quadric:
+             shape: cylz
+             transform:
+               - scale: [0.3, 0.3, 1]
+               - translate: [0.5, 0.5, 0]
+       - BOX:
+           bounds: [ [0,0,0], [1,1,0.6] ]
+     region: CYL and BOX
+  - exanb_write_xyz

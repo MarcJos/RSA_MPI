@@ -9,11 +9,12 @@ namespace sac_de_billes {
 
 using namespace std;
 
-class RandomRadiusGenerator {
+struct RandomRadiusGenerator {
     //! @warning : this can severely hinder the performance UNLESS
     //! 1) r_max - r_min << r_min (in practice, 10% is already high)
     //! 2) OR the maximal configuration is not sought for
 public:
+    RandomRadiusGenerator() {} // A default constructor is required for onika
     //! @brief : internal constructor
     //! @param transform_ : nonlinear transform so that the resulting radius generated is
     //! transform_(x) for x a uniform variable in [0, 1]
@@ -43,10 +44,11 @@ private:
 //! (defaulted as RandomRadiusGenerator, but might be something else)
 //! @tparam DIM : dimension of the space
 template<int DIM, class RANDOM_RADIUS_GENERATOR = RandomRadiusGenerator>
-class RadiusGenerator {
+struct RadiusGenerator {
     //! @brief class used for generating successively radii of spheres to be placed
     //! @warning: the internal representation of radii takes into account a parameter called exclusionDistance, \see RadiusGenerator::setTabRadii
 public:
+    RadiusGenerator() {} // A default constructor is required for onika
     //! @brief: constructor from a list of desired radius and volume fraction
     //! \param desired_radius_nb_phase : vectors of desired (radius of spheres, nb_spheres, phase of spheres)
     //! \param exclusionDistance : minimal distance between spheres

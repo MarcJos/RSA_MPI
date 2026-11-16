@@ -5,12 +5,28 @@
 //! \brief
 #pragma once
 
-#include<median_of_medians.hxx>
+#include <median_of_medians.hxx>
 #include <chrono>
 #include <ctime>
 #include <cmath>
 
 namespace algorithm {
+
+template<int DIM>
+std::vector<law::uniform<double>> auxi::create_random_law(const rsa_domain<DIM>& a_domain,
+	std::mt19937& random_generator) {
+	std::vector<law::uniform<double>> ulaw{};
+
+	const auto inf = a_domain.get_inf();
+	const auto sup = a_domain.get_sup();
+
+	// law are defined for every dimensions
+	for (int i = 0; i < DIM; i++) {
+		ulaw.emplace_back(law::uniform<double>(inf[i], sup[i], random_generator)); // fill law, using boundaries
+	}
+
+	return ulaw;
+}
 
 template<int DIM>
 rsa_algo<DIM>::rsa_algo(rsa_domain<DIM>& a_domain, RadiusGenerator<DIM>& a_radius_generator,
@@ -191,35 +207,52 @@ template<int DIM>
 template<bool plog>
 void  rsa_algo<DIM>::update_covered_voxels(voxel_list::list_of_voxels<DIM>& uncovered_voxels,
 	double miss_rate) {
-	if (miss_rate > desired_miss_rate()) {
-		uncovered_voxels.remove_covered(this->get_grid(), this->m_radius_generator.get_min_radius());
-		uncovered_voxels.subdivide_uncovered(this->get_grid(), this->m_radius_generator.get_min_radius());
+	auxi::update_covered_voxels<DIM>(uncovered_voxels, this->get_grid(),
+		this->m_radius_generator.get_min_radius(), miss_rate, desired_miss_rate(), plog);
+}
+
+template<int DIM>
+int rsa_algo<DIM>::compute_nb_shots_voxel(std::mt19937& random_generator,
+	double intensity, double maximum_intensity) {
+	return auxi::compute_nb_shots_voxel(random_generator, intensity, maximum_intensity, m_nbshots_singledraw);
+}
+
+template<int DIM>
+double rsa_algo<DIM>::compute_intensity_poisson(int a_number_of_voxels) {
+	return auxi::compute_intensity_poisson(a_number_of_voxels);
+}
+
+inline double auxi::compute_intensity_poisson(int64_t a_number_of_voxels) {
+	constexpr double intensity_factor = 0.01; // magical constant
+	return intensity_factor * double(a_number_of_voxels);
+}
+
+inline int auxi::compute_nb_shots_voxel(std::mt19937& random_generator,
+	double intensity, double maximum_intensity, int a_max_shots_per_draw) {
+	double multiplicator_intensity = a_max_shots_per_draw / maximum_intensity;
+	if (multiplicator_intensity > 1) {
+		multiplicator_intensity = 1.;
+	}
+	std::poisson_distribution<> poisson_distrib(multiplicator_intensity * intensity);
+	int nb_shots = poisson_distrib(random_generator);
+	return nb_shots;
+}
+
+template<int DIM>
+void auxi::update_covered_voxels(voxel_list::list_of_voxels<DIM>& uncovered_voxels, const rsa_grid<DIM>& a_grid,
+	double a_min_radius, double miss_rate, double a_desired_miss_rate, bool plog) {
+	if (miss_rate > a_desired_miss_rate) {
+		uncovered_voxels.remove_covered(a_grid, a_min_radius);
+		uncovered_voxels.subdivide_uncovered(a_grid, a_min_radius);
 	}
 
-	if constexpr (plog) {
+	if (plog) {
 		int64_t nb_voxels = uncovered_voxels.size();
 		int64_t max_nb_voxels = rsa_mpi::compute_mpi_max(nb_voxels);
 		int64_t total_nb_voxels = rsa_mpi::compute_mpi_sum(nb_voxels);
 		rsa_mpi::message("Total nb voxels: " + std::to_string(total_nb_voxels));
 		rsa_mpi::message("Max nb voxels  : " + std::to_string(max_nb_voxels));
 	}
-}
-
-template<int DIM>
-int rsa_algo<DIM>::compute_nb_shots_voxel(std::mt19937& random_generator,
-	double intensity, double maximum_intensity) {
-	double mutliplicator_intensity = m_nbshots_singledraw / maximum_intensity;
-	if (mutliplicator_intensity > 1) {
-		mutliplicator_intensity = 1.;
-	}
-	std::poisson_distribution<> poisson_distrib(mutliplicator_intensity * intensity);
-	int nb_shots = poisson_distrib(random_generator);
-	return nb_shots;
-}
-
-template<int DIM>
-double rsa_algo<DIM>::compute_intensity_poisson(int a_number_of_voxels) {
-	return m_intensity_factor * a_number_of_voxels;
 }
 
 template<int DIM>
@@ -310,22 +343,6 @@ arr_vec_double<DIM> auxi::generate_sphere_positions(FuncLaw* a_func_law, int a_s
 		}
 	}
 	return pos;
-}
-
-template<int DIM>
-std::vector<law::uniform<double>> auxi::create_random_law(const rsa_domain<DIM>& a_domain,
-	std::mt19937& random_generator) {
-	std::vector<law::uniform<double>> ulaw{};
-
-	const auto inf = a_domain.get_inf();
-	const auto sup = a_domain.get_sup();
-
-	// law are defined for every dimensions
-	for (int i = 0; i < DIM; i++) {
-		ulaw.emplace_back(law::uniform<double>(inf[i], sup[i], random_generator)); // fill law, using boundaries
-	}
-
-	return ulaw;
 }
 
 template<int DIM>
@@ -544,14 +561,24 @@ int64_t generate_spheres(rsa_grid<DIM>& a_grid,
 	bool may_outreach_nb_spheres) {
 	rsa_data_storage<DIM> spheres = generate_candidates<DIM>(
 		a_center_generator, a_radius_generator, a_priority_generator, a_size);
+	return commit_candidates<DIM>(a_grid, a_recv, a_send, a_ghost_areas, spheres,
+		nb_spheres_total_max, may_outreach_nb_spheres);
+}
 
+template<int DIM>
+int64_t commit_candidates(rsa_grid<DIM>& a_grid,
+	Buffers<DIM>& a_recv, Buffers<DIM>& a_send,
+	GhostAreas<DIM>& a_ghost_areas,
+	rsa_data_storage<DIM>& a_candidates,
+	uint64_t nb_spheres_total_max,
+	bool may_outreach_nb_spheres) {
 	int64_t local_nb_new_spheres = 0;
 
 	//
-	build_grid(a_grid, spheres, TypeTag::Undecided);
+	build_grid(a_grid, a_candidates, TypeTag::Undecided);
 
 	// identify the cells containing spheres with conflicts
-	vector<uint64_t> cells_with_conflicts = auxi::compute_conflict_cells<DIM>(spheres, a_grid);
+	vector<uint64_t> cells_with_conflicts = auxi::compute_conflict_cells<DIM>(a_candidates, a_grid);
 
 	while (add_to_sample(a_grid,
 		a_recv, a_send,

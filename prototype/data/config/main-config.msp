@@ -1,0 +1,44 @@
+includes:
+  - rsa_mpi_default.msp
+  - rsa_mpi_io.msp
+  - rsa_mpi_algorithm.msp
+  - rsa_mpi_algorithm_exanb.msp
+
+input_data: nop
+header: nop
+
+dimension:
+  - message: { mesg: "Please define the dimension in dimension. dimension: dim_3" }
+
+print_parameters:
+  - rsa_mpi_display_domain
+  - rsa_mpi_display_grid
+
+initialize_algo:
+  - rsa_mpi_grid
+  - voxel_list_init
+
+simulation_epilog:
+  - paraview_final_block
+
+update_ghost_config:
+  verbose: true
+  update_ghost_config:
+    gpu_buffer_pack: true
+    async_buffer_pack: true
+    staging_buffer: false
+    serialize_pack_send: true
+    wait_all: false
+
+
+simulation:
+  - header
+#  - hw_device_init
+  - mpi_comm_world
+  - global
+  - dimension
+  - input_data
+  - initialize_algo
+  - algorithm
+  - print_parameters
+  - simulation_epilog

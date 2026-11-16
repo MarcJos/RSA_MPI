@@ -1,0 +1,25 @@
+naive_algorithm:
+  loop: true
+  name: naive_algorithm
+  condition: continue_loop
+  body:
+    - naive_candidates
+    - commit_candidates
+    - rsa_mpi_iteration_log
+    - paraview_details_block
+    - naive_draw_continue
+
+voxel_algorithm:
+  loop: true
+  name: voxel_algorithm
+  condition: continue_loop
+  body:
+    - voxel_candidates
+    - commit_candidates
+    - voxel_update
+    - rsa_mpi_iteration_log
+    - paraview_details_block
+    - voxel_algorithm_continue
+
+# overridable hook: swap this (e.g. to voxel_algorithm) to plug in an alternative packing method
+algorithm: voxel_algorithm

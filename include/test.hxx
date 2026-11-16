@@ -17,7 +17,6 @@ vector<rsa_sphere<DIM>> throw_spheres(sac_de_billes::Point<DIM> L,
     std::array<double, DIM> domain_inf = sac_de_billes::create_array<DIM>(0.);
     std::array<double, DIM> domain_sup = domain_inf + L;
     const int ghost_layer = 1;
-    double volume = sac_de_billes::auxi_function::productOf<double>(L);
     sac_de_billes::RadiusGenerator<DIM> radius_generator(desired_radius_volumeFraction_phase, 1);
     rsa_domain<DIM> domain(domain_inf, domain_sup, ghost_layer, radius_generator.get_max_radius());
 

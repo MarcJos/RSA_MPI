@@ -146,6 +146,27 @@ int64_t generate_spheres(rsa_grid<DIM>& a_grid,
 	uint64_t nb_spheres_total_max,
 	bool may_outreach_nb_spheres);
 
+//! @brief Adds already generated candidate spheres to the grid, resolving conflicts against
+//! the currently validated spheres (and neighboring MPI processes, through ghosts).
+//! @note : this step is agnostic of how the candidates were produced, so it is shared by
+//! every drawing strategy (naive, voxel, ...) once they've produced their own candidates
+//! (@see generate_candidates). @see generate_spheres, which is generate_candidates + this.
+//! @return : Nb of newly added (local) spheres
+//! @param a_grid : The main grid of cells (validated spheres).
+//! @param a_recv : The buffers storing received data from neighboring processes.
+//! @param a_send : The buffers storing data to be sent to neighboring processes.
+//! @param a_ghost_areas : The ghost areas used to store ghost.
+//! @param a_candidates : The candidate spheres to add.
+//! @param nb_spheres_total_max : desired final number of spheres (for this radius/phase).
+//! @param may_outreach_nb_spheres : true if the number of candidates may exceed nb_spheres_total_max.
+template<int DIM>
+int64_t commit_candidates(rsa_grid<DIM>& a_grid,
+	Buffers<DIM>& a_recv, Buffers<DIM>& a_send,
+	GhostAreas<DIM>& a_ghost_areas,
+	rsa_data_storage<DIM>& a_candidates,
+	uint64_t nb_spheres_total_max,
+	bool may_outreach_nb_spheres);
+
 //! @brief Generate candidate spheres
 //! @tparam CenterGenerator
 //! @tparam DIM
@@ -219,6 +240,30 @@ void recompute_conflict_cells(const rsa_grid<DIM>& a_grid, std::vector<uint64_t>
 //! @return the default miss rate of the voxel strategy. (Magical constants.)
 template<int DIM>
 double magical_default_miss_rate();
+
+//! @brief  Comput the (average) number of spheres that should be drawn, based on the number of voxels
+//! @param a_number_of_voxels : how many free voxels are there?
+//! @return : average number of sphere that should be drawn.
+double compute_intensity_poisson(int64_t a_number_of_voxels);
+
+//! compute the desired number of shots
+//! renormalizes it, in such a way that, the (expectance) of the maximal number of shots is < a_max_shots_per_draw
+//! @param intensity : desired intensity
+//! @param maximum_intensity : maximal intensity accross all the MPI processes
+//! @param a_max_shots_per_draw : desired ceiling on the (expected) total number of shots for a single draw
+int compute_nb_shots_voxel(std::mt19937& random_generator, double intensity, double maximum_intensity,
+	int a_max_shots_per_draw);
+
+//! @brief decide to remove covered voxels or subdivide them, depending on miss_rate
+//! @param uncovered_voxels : uncovered voxels for drawing random spheres, updated in place
+//! @param a_grid : grid against which voxels are tested for coverage
+//! @param a_min_radius : minimal radius of the rsa simulation
+//! @param miss_rate : observed miss rate in shots
+//! @param a_desired_miss_rate : aimed miss rate; voxels are only updated when miss_rate exceeds it
+//! @param plog : whether to log the resulting voxel count
+template<int DIM>
+void update_covered_voxels(voxel_list::list_of_voxels<DIM>& uncovered_voxels, const rsa_grid<DIM>& a_grid,
+	double a_min_radius, double miss_rate, double a_desired_miss_rate, bool plog = false);
 } // namespace auxi
 
 //! @brief Generates a std::vector<INT_TYPE> of priorities.

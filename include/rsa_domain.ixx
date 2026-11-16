@@ -5,7 +5,7 @@
 
 template<int DIM>
 rsa_domain<DIM>::rsa_domain(const vec_d<DIM>& global_inf,
-	const vec_d<DIM>& global_sup, const int a_ghost_layer, const double a_rad)
+	const vec_d<DIM>& global_sup, const int a_ghost_layer, const double a_rad, const std::array<bool, DIM>& a_periodic)
 	:m_global_inf(global_inf), m_global_sup(global_sup), m_rad{ a_rad } {
 	int mpi_rank = -1;
 	int mpi_size = -1;
@@ -19,8 +19,8 @@ rsa_domain<DIM>::rsa_domain(const vec_d<DIM>& global_inf,
 	// define ghost layer
 	this->m_ghost_layer = a_ghost_layer;
 
-	// load balancing 
-	lb(mpi_rank, mpi_size, global_inf, global_sup, a_rad);
+	// load balancing
+	lb(mpi_rank, mpi_size, global_inf, global_sup, a_rad, a_periodic);
 
 	// define data storage
 	this->m_grid = rsa_grid<DIM>(a_rad, a_ghost_layer, this->get_inf(), this->get_sup());
@@ -30,14 +30,15 @@ rsa_domain<DIM>::rsa_domain(const vec_d<DIM>& global_inf,
 
 template<int DIM>
 void rsa_domain<DIM>::lb(
-	const int a_id, const int a_n_mpi, const vec_d<DIM>& global_inf, const vec_d<DIM>& global_sup, const double a_rad) {
+	const int a_id, const int a_n_mpi, const vec_d<DIM>& global_inf, const vec_d<DIM>& global_sup, const double a_rad,
+	const std::array<bool, DIM>& a_periodic) {
 	int ndims[DIM];
 	int periods[DIM];
 	MPI_Comm MPI_COMM_CART;
 	int rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	for (int dim = 0; dim < DIM; dim++) {
-		periods[dim] = 1;
+		periods[dim] = a_periodic[dim] ? 1 : 0;
 		ndims[dim] = 0; // do not remove it
 	}
 	MPI_Dims_create(a_n_mpi, DIM, ndims);

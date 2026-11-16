@@ -54,6 +54,28 @@ void list_of_voxels<DIM>::remove_covered(const RSA_GRID& a_rsa_grid, double a_mi
 }
 
 template<int DIM>
+template<class Pred>
+void list_of_voxels<DIM>::remove_covered_if(Pred&& a_is_covered) {
+    int64_t old_size = this->size();
+    BooleanVector is_voxel_covered(old_size, false);
+#pragma omp parallel for
+    for (int64_t id_vox = 0; id_vox < old_size; id_vox++) {
+        is_voxel_covered[id_vox] = a_is_covered(this->orig_voxel(id_vox), m_voxel_lengths, m_corners_voxel);
+    }
+    for (int64_t id_vox = 0; id_vox < old_size; id_vox++) {
+        if (is_voxel_covered[id_vox]) {
+            std::memcpy(&(m_voxel_coordinates[id_vox]),
+                &(m_voxel_coordinates[(old_size - 1)]),
+                sizeof(m_voxel_coordinates[0]));
+            is_voxel_covered[id_vox] = is_voxel_covered[(old_size - 1)];
+            id_vox--;
+            old_size--;
+        }
+    }
+    m_voxel_coordinates.resize(old_size);
+}
+
+template<int DIM>
 template<class RSA_GRID>
 void list_of_voxels<DIM>::subdivide_uncovered(const RSA_GRID& a_rsa_grid, double a_minimal_radius) {
 
@@ -94,6 +116,49 @@ void list_of_voxels<DIM>::subdivide_uncovered(const RSA_GRID& a_rsa_grid, double
         }
     }
     new_voxel_coordinates.resize(k);// last coordinates are not used, because of covered_voxels
+
+    set_voxel_lengths(new_voxel_lengths);
+    std::swap(m_voxel_coordinates, new_voxel_coordinates);
+}
+
+template<int DIM>
+template<class Pred>
+void list_of_voxels<DIM>::subdivide_uncovered_if(Pred&& a_is_covered) {
+    if (size() == 0) { return; }
+    auto new_voxel_lengths = 0.5 * m_voxel_lengths;
+    uint64_t old_size = this->size();
+    constexpr int nb_corners = auxi_function::puissance<DIM>(2);
+
+    const auto& tabcorner = sac_de_billes::path::TabCorner<DIM>::get().getTab();
+    auto new_corners_voxel = m_corners_voxel;
+    auxi::create_corners_voxel_inplace<DIM>(new_voxel_lengths, new_corners_voxel);
+
+    const int64_t total_children = static_cast<int64_t>(old_size) * nb_corners;
+    std::vector<DiscPoint<DIM>> child_coords(total_children);
+    BooleanVector keep(total_children, false);
+
+#pragma omp parallel for
+    for (int64_t idx = 0; idx < total_children; idx++) {
+        const uint64_t i = idx / nb_corners;
+        const size_t i_corner = idx % nb_corners;
+        Point<DIM> origin_voxel;
+        for (size_t d = 0; d < DIM; d++) {
+            int64_t new_vox_coord = 2 * m_voxel_coordinates[i][d] + tabcorner[i_corner][d];
+            child_coords[idx][d] = new_vox_coord;
+            origin_voxel[d] = m_origin[d] + new_vox_coord * new_voxel_lengths[d];
+        }
+        keep[idx] = !a_is_covered(origin_voxel, new_voxel_lengths, new_corners_voxel);
+    }
+
+    static std::vector<DiscPoint<DIM>> new_voxel_coordinates{};
+    new_voxel_coordinates.resize(total_children);
+    uint64_t k = 0;
+    for (int64_t idx = 0; idx < total_children; idx++) {
+        if (keep[idx]) {
+            new_voxel_coordinates[k++] = child_coords[idx];
+        }
+    }
+    new_voxel_coordinates.resize(k);
 
     set_voxel_lengths(new_voxel_lengths);
     std::swap(m_voxel_coordinates, new_voxel_coordinates);
@@ -182,6 +247,12 @@ bool list_of_voxels<DIM>::is_covered(int64_t a_id_voxel,
     return auxi::is_covered<DIM>(this->orig_voxel(a_id_voxel), m_voxel_lengths,
         this->get_corners_voxel(),
         a_rsa_grid, a_minimal_radius);
+}
+
+template<int DIM>
+template<class Pred>
+bool list_of_voxels<DIM>::is_covered_if(int64_t a_id_voxel, Pred&& a_is_covered) const {
+    return a_is_covered(this->orig_voxel(a_id_voxel), m_voxel_lengths, this->get_corners_voxel());
 }
 
 template<int DIM>
