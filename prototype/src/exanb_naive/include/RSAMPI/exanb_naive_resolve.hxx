@@ -1,11 +1,11 @@
 #pragma once
 
-#include <RSAMPI/exanb_naive_amr.hxx>
 #include <RSAMPI/fields.h>
 #include <exanb/amr/amr_grid.h>
 #include <exanb/core/domain.h>
 #include <exanb/core/grid.h>
 
+#include <RSAMPI/exanb_naive_amr.hxx>
 #include <algorithm>
 #include <cstdint>
 #include <vector>
@@ -89,8 +89,8 @@ inline bool overlaps_lower_priority(GridT& grid, const ::exanb::AmrGrid& amr, co
 
 /// \brief Local (this rank's) outcome of a call to resolve_candidates_pass.
 struct ResolvePassStats {
-  bool changed = false;      ///< true if this rank confirmed or rejected at least one candidate
-  int64_t undecided = 0;     ///< still-alive, not-yet-confirmed candidates remaining after this pass
+  bool changed = false;   ///< true if this rank confirmed or rejected at least one candidate
+  int64_t undecided = 0;  ///< still-alive, not-yet-confirmed candidates remaining after this pass
 };
 
 /// \brief One pass of the multi-rank candidate-resolution loop.
@@ -108,34 +108,41 @@ inline ResolvePassStats resolve_candidates_pass(GridT& main_grid, GridT& candida
   // from one consistent pre-pass snapshot, who dies to main_grid and who
   // becomes newly confirmed, then apply confirmations before phase 2 reads
   // them.
-  std::vector<std::vector<size_t>> dead_per_cell;
-  std::vector<std::vector<size_t>> newly_confirmed_per_cell;  // slot indices, within each cell
-  dead_per_cell.reserve(n_real_cells);
-  newly_confirmed_per_cell.reserve(n_real_cells);
+  // Warning, use of static vectors here is a hack to avoid repeated allocations in the inner loop of a multi-pass
+  // resolve_candidates loop.
+  static std::vector<std::vector<size_t>> dead_per_cell;
+  static std::vector<std::vector<size_t>> newly_confirmed_per_cell;
+  dead_per_cell.resize(n_real_cells);
+  newly_confirmed_per_cell.resize(n_real_cells);
+  for (auto& v : dead_per_cell) v.clear();
+  for (auto& v : newly_confirmed_per_cell) v.clear();
 
-  for (ssize_t i = gl; i < dim.i - gl; i++) {
-    for (ssize_t j = gl; j < dim.j - gl; j++) {
-      for (ssize_t k = gl; k < dim.k - gl; k++) {
-        auto& cell = candidate_grid.cell(::exanb::IJK{i, j, k});
-        const size_t n = cell.size();
-        std::vector<size_t> dead;
-        std::vector<size_t> newly_confirmed;
-        for (size_t s = 0; s < n; s++) {
-          if (cell[::exanb::field::confirmed][s] != 0) {
-            continue;
-          }
-          const ::exanb::Vec3d p{cell[::exanb::field::rx][s], cell[::exanb::field::ry][s], cell[::exanb::field::rz][s]};
-          const double r = cell[::exanb::field::radius][s];
-          const uint64_t id = cell[::exanb::field::id][s];
-          const uint64_t priority = cell[::exanb::field::priority][s];
-          if (overlaps_existing(main_grid, main_amr, p, r, max_radius)) {
-            dead.push_back(s);
-          } else if (!overlaps_lower_priority(candidate_grid, candidate_amr, p, r, max_radius, priority, id)) {
-            newly_confirmed.push_back(s);
+  {
+    size_t cell_idx = 0;
+    for (ssize_t i = gl; i < dim.i - gl; i++) {
+      for (ssize_t j = gl; j < dim.j - gl; j++) {
+        for (ssize_t k = gl; k < dim.k - gl; k++) {
+          auto& cell = candidate_grid.cell(::exanb::IJK{i, j, k});
+          const size_t n = cell.size();
+          auto& dead = dead_per_cell[cell_idx];
+          auto& newly_confirmed = newly_confirmed_per_cell[cell_idx];
+          ++cell_idx;
+          for (size_t s = 0; s < n; s++) {
+            if (cell[::exanb::field::confirmed][s] != 0) {
+              continue;
+            }
+            const ::exanb::Vec3d p{cell[::exanb::field::rx][s], cell[::exanb::field::ry][s],
+                                   cell[::exanb::field::rz][s]};
+            const double r = cell[::exanb::field::radius][s];
+            const uint64_t id = cell[::exanb::field::id][s];
+            const uint64_t priority = cell[::exanb::field::priority][s];
+            if (overlaps_existing(main_grid, main_amr, p, r, max_radius)) {
+              dead.push_back(s);
+            } else if (!overlaps_lower_priority(candidate_grid, candidate_amr, p, r, max_radius, priority, id)) {
+              newly_confirmed.push_back(s);
+            }
           }
         }
-        dead_per_cell.push_back(std::move(dead));
-        newly_confirmed_per_cell.push_back(std::move(newly_confirmed));
       }
     }
   }
