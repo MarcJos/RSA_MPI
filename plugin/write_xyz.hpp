@@ -2,6 +2,10 @@
 
 #include <rsa_data_storage.hxx>
 #include <rsa_buffer.hxx>
+#include <array>
+#include <fstream>
+#include <sstream>
+#include <string>
 
 template<int DIM>
 rsa_data_storage<DIM> gather_data(rsa_data_storage<DIM>& a_data) {
@@ -76,7 +80,7 @@ rsa_data_storage<DIM> gather_data(rsa_data_storage<DIM>& a_data) {
 }
 
 template<int DIM>
-void write_xyz(std::string a_name, rsa_data_storage<DIM>& spheres, std::array<double, DIM>& a_sup) {
+void write_xyz(std::string a_name, rsa_data_storage<DIM>& spheres, const std::array<double, DIM>& a_sup) {
 	int mpi_rank;
 	auto comm = MPI_COMM_WORLD;
 	MPI_Comm_rank(comm, &mpi_rank);
@@ -85,14 +89,27 @@ void write_xyz(std::string a_name, rsa_data_storage<DIM>& spheres, std::array<do
 	if (mpi_rank == 0) {
 		std::ofstream outFile(a_name);
 		if (!outFile) {
-			std::cerr << "Erreur : impossible de créer le fichier de sortie !" << std::endl;
+			std::cerr << "Erreur : impossible de créer le fichier de sortie " << a_name << " !" << std::endl;
 			return;
 		}
-		outFile << all_spheres.size() << std::endl;
-		outFile << a_sup[0] << " " << a_sup[1] << " " << a_sup[2] << std::endl;
-		for (int i = 0; i < all_spheres.size(); i++) {
+		// XYZ files expect 3 coordinates: pad with 0 when DIM < 3.
+		constexpr int n_coords = DIM < 3 ? 3 : DIM;
+		auto write_coords = [&outFile](const auto& a_vec) {
+			for (int d = 0; d < n_coords; d++) {
+				outFile << " " << (d < DIM ? a_vec[d] : 0.0);
+			}
+			outFile << "\n";
+		};
+		outFile << all_spheres.size() << "\n";
+		std::ostringstream header;
+		for (int d = 0; d < n_coords; d++) {
+			header << (d == 0 ? "" : " ") << (d < DIM ? a_sup[d] : 0.0);
+		}
+		outFile << header.str() << "\n";
+		for (size_t i = 0; i < all_spheres.size(); i++) {
 			const auto center = all_spheres.get_center(i);
-			outFile << type << " " << center[0] << " " << center[1] << " " << center[2] << std::endl;
+			outFile << type;
+			write_coords(center);
 		}
 	}
 }

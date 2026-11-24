@@ -7,6 +7,7 @@
 
 #include<test.hxx>
 #include<rsa_parameters.hxx>
+#include<write_xyz.hpp>
 
 template<class TypeTest, class ...Args>
 void make_XP(int nb_threads, TypeTest type_test, Args... args) {
@@ -35,7 +36,7 @@ void write_to_file(const std::string& file_path, TYPE value) {
 }
 
 template<int DIM, int method>
-void test_perf(double rad, vector<double> l_min_, vector<double> l_max_, size_t seed, size_t size, size_t n_ndraw, bool check_vox_time = false, bool see_paraview = false) {
+void test_perf(double rad, vector<double> l_min_, vector<double> l_max_, size_t seed, size_t size, size_t n_ndraw, bool check_vox_time = false, bool see_paraview = false, std::string xyz_file = "") {
     std::string outputFile = "outputFile.txt"; //  magical
     const int ghost_layer = 1;
 
@@ -96,6 +97,12 @@ void test_perf(double rad, vector<double> l_min_, vector<double> l_max_, size_t 
     if (see_paraview == 1) {
         rsa_paraview::paraview("ParaviewOutput", domain.get_grid());
     }
+
+    if (!xyz_file.empty()) {
+        rsa_mpi::message("====> write xyz output file: " + xyz_file + " <=====");
+        auto spheres = domain.get_grid().template extract_data<TypeCell::Real>();
+        write_xyz<DIM>(xyz_file, spheres, l_max);
+    }
 }
 
 template<int DIM, class ...Args>
@@ -112,7 +119,7 @@ void test_perf_(int dim, Args... args) {
 }
 
 inline void test_perf(rsa_mpi::rsa_parameters& p) {
-    test_perf_<1>(p.DIM, p.radius, p.l_min, p.l_max, p.seed, p.size, p.n_draw, false, static_cast<bool>(p.paraview));
+    test_perf_<1>(p.DIM, p.radius, p.l_min, p.l_max, p.seed, p.size, p.n_draw, false, static_cast<bool>(p.paraview), p.xyz_file);
 }
 
 template<class ...Args>
