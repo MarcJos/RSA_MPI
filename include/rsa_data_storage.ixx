@@ -147,9 +147,9 @@ void rsa_data_storage<DIM>::print_spheres() const {
 	auto number_of_spheres = size();
 	assert(size() < 1E9);
 	for (size_t i = 0; i < number_of_spheres; i++) {
-		auto positions = this->get_position();
-		if constexpr (DIM == 2)	rsa_mpi::message(i, positions[0][i], positions[1][i]);
-		if constexpr (DIM == 3)	rsa_mpi::message(i, positions[0][i], positions[1][i], positions[2][i]);
+		const auto& position = m_pos[i];
+		if constexpr (DIM == 2)	rsa_mpi::message(i, position[0], position[1]);
+		if constexpr (DIM == 3)	rsa_mpi::message(i, position[0], position[1], position[2]);
 	}
 }
 

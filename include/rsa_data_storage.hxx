@@ -87,7 +87,7 @@ public:
 	//! @brief mutator
 	//! @param a_idx : index
 	//! @param a_in : input radius
-	void set_rad(const int a_idx, const double a_in) { return m_rad[a_idx] = a_in; }
+	void set_rad(const int a_idx, const double a_in) { m_rad[a_idx] = a_in; }
 	//! @brief mutator
 	//! @param a_dim : dimension
 	//! @param a_value : input value of the shift

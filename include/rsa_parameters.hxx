@@ -3,6 +3,7 @@
 #pragma once
 
 #include <stdlib.h>
+#include <string>
 
 namespace rsa_mpi {
 /*
@@ -19,6 +20,7 @@ struct rsa_parameters {
   int n_draw = 10;                            // Number of draws
   int size = 6000;                            // TO DO RENAME
   bool paraview = 0;                           // Flag for Paraview visualization
+  std::string xyz_file = "";                   // XYZ output file (empty = disabled)
 
 
   /*
@@ -37,6 +39,7 @@ struct rsa_parameters {
       std::cout << "N Draw      = " << n_draw << std::endl;
       std::cout << "Size        = " << size << std::endl;
       std::cout << "Paraview    = " << paraview << " (0 disabled, 1 activated)" << std::endl;
+      std::cout << "XYZ file    = " << (xyz_file.empty() ? "disabled" : xyz_file) << std::endl;
       std::cout << "==========================================" << std::endl;
     }
   }
@@ -84,7 +87,8 @@ inline void help()
       std::cout << "--size [int],                set the maximum number of spheres thrown per dart." << std::endl;
       std::cout << "--inf [double, ..., double], set the position of the bottom limit of the simulation domain." << std::endl;
       std::cout << "--sup [double, ..., double], set the position of the upper limit of the simulation domain." << std::endl;
-      std::cout << "--paraview [int, 0 or 1],    disable [0] or activate [0] the feature: write paraview files, default is 0." << std::endl;
+      std::cout << "--paraview [int, 0 or 1],    disable [0] or activate [1] the feature: write paraview files, default is 0." << std::endl;
+      std::cout << "--file-xyz [filename],       write spheres in a XYZ file, default filename is output.xyz." << std::endl;
     }
 }
 
@@ -172,6 +176,18 @@ rsa_parameters read_input(int argc, char** argv) {
       i += 2;
       continue;
     }
+    if (key == "--file-xyz") {
+      // optional filename: use it only if the next argument is not another option
+      if (i + 1 < argc && std::string(argv[i + 1]).rfind("--", 0) != 0) {
+        param.xyz_file = argv[i + 1];
+        i += 2;
+      } else {
+        param.xyz_file = "output.xyz";
+        i += 1;
+      }
+      continue;
+    }
+
     // no key found
     if (rsa_mpi::get_my_rank() == 0)  std::cout << key << " is ignored." << std::endl;
     i++;
