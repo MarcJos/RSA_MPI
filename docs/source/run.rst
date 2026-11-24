@@ -46,7 +46,9 @@ Parameters description
 +------------+-----------------------+-----------------------------------------------------------------------------+
 | --sup      | [double, ..., double] | set the position of the upper limit of the simulation domain.               |
 +------------+-----------------------+-----------------------------------------------------------------------------+
-| --paraview | int, 0 or 1           | disable [0] or activate [0] the feature: write paraview files, default is 0 |
+| --paraview | int, 0 or 1           | disable [0] or activate [1] the feature: write paraview files, default is 0 |
++------------+-----------------------+-----------------------------------------------------------------------------+
+| --file-xyz | [filename] (optional) | write spheres in a XYZ file, default filename is output.xyz.                |
 +------------+-----------------------+-----------------------------------------------------------------------------+
 
 Bash Example Run:
@@ -65,6 +67,27 @@ Display your results:
   paraview ParaviewOutput/rsa_mpi_0.pvtp
 
 .. figure:: _static/Illustration_example.png
+
+XYZ output
+----------
+
+Add ``--file-xyz`` to write all the spheres (gathered on the MPI rank 0) in a XYZ file.
+The filename is optional, the default one is ``output.xyz``:
+
+.. code-block:: bash
+
+   mpirun -n 4 rsa --dim 3 --radius 0.02 --sup 1 1 1 --file-xyz
+   mpirun -n 4 rsa --dim 3 --radius 0.02 --sup 1 1 1 --file-xyz my_spheres.xyz
+
+File format:
+
+.. code-block:: text
+
+   N                 <- number of spheres
+   sup_x sup_y sup_z <- upper limit of the simulation domain
+   0 x y z           <- type and center of each sphere (N lines)
+
+In 2D, the ``z`` coordinate is set to 0.
 
 
 C++ Script Example
